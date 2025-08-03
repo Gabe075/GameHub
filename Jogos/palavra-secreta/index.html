@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palavra Secreta - GameHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../common.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            padding: 1rem;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .game-area {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .category {
+            font-size: 1.2rem;
+            color: #FFD700;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .word-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            letter-spacing: 0.5rem;
+            margin: 2rem 0;
+            font-family: 'Courier New', monospace;
+            color: #FFD700;
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clue {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border-left: 4px solid #FFD700;
+        }
+
+        .alphabet {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .letter-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.8rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .letter-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .letter-btn.correct {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: #4CAF50;
+        }
+
+        .letter-btn.incorrect {
+            background: rgba(244, 67, 54, 0.8);
+            border-color: #f44336;
+        }
+
+        .letter-btn.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .hangman-display {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            line-height: 1.2;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            white-space: pre-line;
+        }
+
+        .start-screen, .results-screen {
+            text-align: center;
+        }
+
+        .start-screen h2, .results-screen h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #FFD700;
+        }
+
+        .start-screen p, .results-screen p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.8rem 1.5rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .difficulty-btn.active {
+            background: rgba(76, 175, 80, 0.6);
+            border-color: #4CAF50;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+        }
+
+        .score-breakdown {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 1.5rem 0;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .final-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 1.5rem;
+                margin: 0.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .word-display {
+                font-size: 2rem;
+                letter-spacing: 0.3rem;
+            }
+
+            .alphabet {
+                grid-template-columns: repeat(6, 1fr);
+            }
+
+            .stats {
+                padding: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .word-display {
+                font-size: 1.5rem;
+                letter-spacing: 0.2rem;
+            }
+
+            .alphabet {
+                grid-template-columns: repeat(5, 1fr);
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stat-item {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .difficulty-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.location.href='../../index.html'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="game-container">
+        <!-- Tela Inicial -->
+        <div class="start-screen" id="startScreen">
+            <h1>
+                <i class="fas fa-key"></i>
+                Palavra Secreta
+            </h1>
+            <h2>Descubra a palavra!</h2>
+            <p>Use as dicas para descobrir a palavra secreta. Cuidado com os erros - você tem apenas 6 tentativas!</p>
+            
+            <div class="difficulty-selector">
+                <button class="difficulty-btn active" data-difficulty="easy">
+                    <i class="fas fa-smile"></i> Fácil
+                </button>
+                <button class="difficulty-btn" data-difficulty="medium">
+                    <i class="fas fa-meh"></i> Médio
+                </button>
+                <button class="difficulty-btn" data-difficulty="hard">
+                    <i class="fas fa-frown"></i> Difícil
+                </button>
+            </div>
+            
+            <button class="btn" onclick="startGame()">
+                <i class="fas fa-play"></i>
+                Começar Jogo
+            </button>
+        </div>
+
+        <!-- Tela do Jogo -->
+        <div class="game-screen" id="gameScreen" style="display: none;">
+            <h1>
+                <i class="fas fa-key"></i>
+                Palavra Secreta
+            </h1>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">Pontuação</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Nível</div>
+                    <div class="stat-value" id="level">1</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Erros</div>
+                    <div class="stat-value" id="errors">0/6</div>
+                </div>
+            </div>
+
+            <div class="game-area">
+                <div class="category" id="category">Categoria: Animais</div>
+                <div class="word-display" id="wordDisplay">_ _ _ _ _</div>
+                <div class="clue" id="clue">Dica: Animal doméstico que late</div>
+                
+                <div class="hangman-display" id="hangmanDisplay"></div>
+                
+                <div class="alphabet" id="alphabet">
+                    <!-- Letras serão inseridas aqui -->
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="skipWord()">
+                <i class="fas fa-forward"></i>
+                Pular Palavra
+            </button>
+        </div>
+
+        <!-- Tela de Resultados -->
+        <div class="results-screen" id="resultsScreen" style="display: none;">
+            <h1>
+                <i class="fas fa-trophy"></i>
+                Resultados
+            </h1>
+            <h2 id="resultTitle">Parabéns!</h2>
+            <p id="resultMessage">Você completou o jogo!</p>
+            
+            <div class="score-breakdown">
+                <div class="score-item">
+                    <span>Nível Alcançado:</span>
+                    <span id="finalLevel">1</span>
+                </div>
+                <div class="score-item">
+                    <span>Palavras Descobertas:</span>
+                    <span id="wordsFound">0</span>
+                </div>
+                <div class="score-item">
+                    <span>Palavras Puladas:</span>
+                    <span id="wordsSkipped">0</span>
+                </div>
+                <div class="score-item">
+                    <span>Precisão:</span>
+                    <span id="accuracy">0%</span>
+                </div>
+                <div class="final-score">
+                    Pontuação Final: <span id="finalScore">0</span>
+                </div>
+            </div>
+
+            <button class="btn" onclick="restartGame()">
+                <i class="fas fa-redo"></i>
+                Jogar Novamente
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='../../index.html'">
+                <i class="fas fa-home"></i>
+                Menu Principal
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Banco de palavras por dificuldade
+        const wordDatabase = {
+            easy: [
+                { word: 'GATO', category: 'Animais', clue: 'Animal doméstico que mia' },
+                { word: 'CASA', category: 'Objetos', clue: 'Lugar onde moramos' },
+                { word: 'SOL', category: 'Natureza', clue: 'Estrela que ilumina o dia' },
+                { word: 'AGUA', category: 'Natureza', clue: 'Líquido essencial para a vida' },
+                { word: 'LIVRO', category: 'Objetos', clue: 'Objeto com páginas para ler' },
+                { word: 'FLOR', category: 'Natureza', clue: 'Parte colorida das plantas' },
+                { word: 'PEIXE', category: 'Animais', clue: 'Animal que vive na água' },
+                { word: 'CARRO', category: 'Transporte', clue: 'Veículo com quatro rodas' },
+                { word: 'BOLA', category: 'Brinquedos', clue: 'Objeto redondo para jogar' },
+                { word: 'MESA', category: 'Móveis', clue: 'Móvel para comer ou estudar' }
+            ],
+            medium: [
+                { word: 'ELEFANTE', category: 'Animais', clue: 'Maior mamífero terrestre' },
+                { word: 'COMPUTADOR', category: 'Tecnologia', clue: 'Máquina para processar dados' },
+                { word: 'MONTANHA', category: 'Geografia', clue: 'Elevação natural do terreno' },
+                { word: 'BIBLIOTECA', category: 'Lugares', clue: 'Local com muitos livros' },
+                { word: 'BORBOLETA', category: 'Animais', clue: 'Inseto com asas coloridas' },
+                { word: 'CHOCOLATE', category: 'Comida', clue: 'Doce feito de cacau' },
+                { word: 'GUITARRA', category: 'Instrumentos', clue: 'Instrumento de cordas' },
+                { word: 'HOSPITAL', category: 'Lugares', clue: 'Local para tratar doentes' },
+                { word: 'TELEFONE', category: 'Tecnologia', clue: 'Aparelho para falar à distância' },
+                { word: 'PROFESSOR', category: 'Profissões', clue: 'Pessoa que ensina' }
+            ],
+            hard: [
+                { word: 'ARQUEOLOGIA', category: 'Ciências', clue: 'Estudo de civilizações antigas' },
+                { word: 'FOTOSSINTESE', category: 'Biologia', clue: 'Processo das plantas para produzir energia' },
+                { word: 'DEMOCRACIA', category: 'Política', clue: 'Sistema de governo do povo' },
+                { word: 'PSICOLOGIA', category: 'Ciências', clue: 'Estudo da mente humana' },
+                { word: 'REFRIGERADOR', category: 'Eletrodomésticos', clue: 'Aparelho que conserva alimentos frios' },
+                { word: 'EXTRAORDINARIO', category: 'Adjetivos', clue: 'Algo fora do comum, excepcional' },
+                { word: 'MICROORGANISMO', category: 'Biologia', clue: 'Ser vivo microscópico' },
+                { word: 'SUPERMERCADO', category: 'Lugares', clue: 'Grande loja de produtos diversos' },
+                { word: 'PARALELEPIPEDO', category: 'Geometria', clue: 'Figura geométrica de seis faces' },
+                { word: 'INCONSTITUCIONAL', category: 'Direito', clue: 'Que vai contra a constituição' }
+            ]
+        };
+
+        // Estado do jogo
+        let gameState = {
+            score: 0,
+            level: 1,
+            errors: 0,
+            maxErrors: 6,
+            wordsFound: 0,
+            wordsSkipped: 0,
+            difficulty: 'easy',
+            currentWord: null,
+            guessedLetters: [],
+            gameActive: false
+        };
+
+        // Desenhos da forca
+        const hangmanDrawings = [
+            '', // 0 erros
+            '  +---+\n      |\n      |\n      |\n      |\n      |\n=========',
+            '  +---+\n  |   |\n      |\n      |\n      |\n      |\n=========',
+            '  +---+\n  |   |\n  O   |\n      |\n      |\n      |\n=========',
+            '  +---+\n  |   |\n  O   |\n  |   |\n      |\n      |\n=========',
+            '  +---+\n  |   |\n  O   |\n /|   |\n      |\n      |\n=========',
+            '  +---+\n  |   |\n  O   |\n /|\\  |\n      |\n      |\n=========',
+            '  +---+\n  |   |\n  O   |\n /|\\  |\n /    |\n      |\n=========',
+            '  +---+\n  |   |\n  O   |\n /|\\  |\n / \\  |\n      |\n========='
+        ];
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDifficultyButtons();
+            generateAlphabet();
+        });
+
+        function setupDifficultyButtons() {
+            const buttons = document.querySelectorAll('.difficulty-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    gameState.difficulty = btn.dataset.difficulty;
+                });
+            });
+        }
+
+        function generateAlphabet() {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const container = document.getElementById('alphabet');
+            container.innerHTML = '';
+            
+            for (let letter of alphabet) {
+                const button = document.createElement('button');
+                button.className = 'letter-btn';
+                button.textContent = letter;
+                button.onclick = () => guessLetter(letter);
+                container.appendChild(button);
+            }
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            
+            // Reset game state
+            gameState.score = 0;
+            gameState.level = 1;
+            gameState.errors = 0;
+            gameState.wordsFound = 0;
+            gameState.wordsSkipped = 0;
+            gameState.gameActive = true;
+            
+            updateStats();
+            nextWord();
+        }
+
+        function nextWord() {
+            if (!gameState.gameActive) return;
+            
+            const words = wordDatabase[gameState.difficulty];
+            gameState.currentWord = words[Math.floor(Math.random() * words.length)];
+            gameState.guessedLetters = [];
+            gameState.errors = 0;
+            
+            updateDisplay();
+            resetAlphabet();
+            updateStats();
+        }
+
+        function updateDisplay() {
+            const word = gameState.currentWord.word;
+            let display = '';
+            
+            for (let letter of word) {
+                if (gameState.guessedLetters.includes(letter)) {
+                    display += letter + ' ';
+                } else {
+                    display += '_ ';
+                }
+            }
+            
+            document.getElementById('wordDisplay').textContent = display.trim();
+            document.getElementById('category').textContent = `Categoria: ${gameState.currentWord.category}`;
+            document.getElementById('clue').textContent = `Dica: ${gameState.currentWord.clue}`;
+            document.getElementById('hangmanDisplay').textContent = hangmanDrawings[gameState.errors];
+        }
+
+        function resetAlphabet() {
+            const buttons = document.querySelectorAll('.letter-btn');
+            buttons.forEach(btn => {
+                btn.className = 'letter-btn';
+                btn.disabled = false;
+            });
+        }
+
+        function guessLetter(letter) {
+            if (!gameState.gameActive || gameState.guessedLetters.includes(letter)) return;
+            
+            gameState.guessedLetters.push(letter);
+            const button = [...document.querySelectorAll('.letter-btn')].find(btn => btn.textContent === letter);
+            
+            if (gameState.currentWord.word.includes(letter)) {
+                // Letra correta
+                button.classList.add('correct');
+                
+                // Verificar se a palavra foi completada
+                if (isWordComplete()) {
+                    wordCompleted();
+                }
+            } else {
+                // Letra incorreta
+                button.classList.add('incorrect');
+                gameState.errors++;
+                
+                if (gameState.errors >= gameState.maxErrors) {
+                    wordFailed();
+                }
+            }
+            
+            button.classList.add('disabled');
+            updateDisplay();
+            updateStats();
+        }
+
+        function isWordComplete() {
+            const word = gameState.currentWord.word;
+            return word.split('').every(letter => gameState.guessedLetters.includes(letter));
+        }
+
+        function wordCompleted() {
+            gameState.wordsFound++;
+            gameState.score += (gameState.currentWord.word.length * 10) + (gameState.maxErrors - gameState.errors) * 5;
+            
+            // Aumentar nível a cada 3 palavras
+            if (gameState.wordsFound % 3 === 0) {
+                gameState.level++;
+            }
+            
+            setTimeout(() => {
+                if (gameState.wordsFound >= 10) {
+                    endGame();
+                } else {
+                    nextWord();
+                }
+            }, 2000);
+        }
+
+        function wordFailed() {
+            setTimeout(() => {
+                endGame();
+            }, 2000);
+        }
+
+        function skipWord() {
+            if (!gameState.gameActive) return;
+            
+            gameState.wordsSkipped++;
+            
+            if (gameState.wordsFound + gameState.wordsSkipped >= 10) {
+                endGame();
+            } else {
+                nextWord();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('errors').textContent = `${gameState.errors}/${gameState.maxErrors}`;
+        }
+
+        function endGame() {
+            gameState.gameActive = false;
+            
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'block';
+            
+            const totalWords = gameState.wordsFound + gameState.wordsSkipped;
+            const accuracy = totalWords > 0 ? Math.round((gameState.wordsFound / totalWords) * 100) : 0;
+            
+            document.getElementById('finalLevel').textContent = gameState.level;
+            document.getElementById('wordsFound').textContent = gameState.wordsFound;
+            document.getElementById('wordsSkipped').textContent = gameState.wordsSkipped;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('finalScore').textContent = gameState.score;
+            
+            // Mensagem baseada na performance
+            let title, message;
+            if (gameState.wordsFound >= 8) {
+                title = 'Detetive de Palavras!';
+                message = 'Você é um mestre em descobrir palavras secretas!';
+            } else if (gameState.wordsFound >= 6) {
+                title = 'Excelente!';
+                message = 'Suas habilidades de dedução são impressionantes!';
+            } else if (gameState.wordsFound >= 4) {
+                title = 'Muito Bom!';
+                message = 'Você tem um bom vocabulário e raciocínio!';
+            } else if (gameState.wordsFound >= 2) {
+                title = 'Bom Trabalho!';
+                message = 'Continue praticando para melhorar!';
+            } else {
+                title = 'Continue Tentando!';
+                message = 'Com mais prática, você vai descobrir mais palavras!';
+            }
+            
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultMessage').textContent = message;
+        }
+
+        function restartGame() {
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+

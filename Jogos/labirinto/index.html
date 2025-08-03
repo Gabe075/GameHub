@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labirinto - GameHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../common.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            padding: 1rem;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .game-area {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .maze-container {
+            position: relative;
+            background: #2c3e50;
+            border: 3px solid #34495e;
+            border-radius: 10px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .maze {
+            display: grid;
+            gap: 1px;
+            background: #34495e;
+            padding: 2px;
+        }
+
+        .cell {
+            width: 20px;
+            height: 20px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .cell.wall {
+            background: #2c3e50;
+        }
+
+        .cell.path {
+            background: #ecf0f1;
+        }
+
+        .cell.start {
+            background: #2ecc71;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.6);
+        }
+
+        .cell.end {
+            background: #e74c3c;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.6);
+        }
+
+        .cell.player {
+            background: #3498db;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.8);
+            animation: pulse 1.5s infinite;
+        }
+
+        .cell.visited {
+            background: #f39c12;
+            opacity: 0.6;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 1rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.8rem 1.5rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .difficulty-btn.active {
+            background: rgba(76, 175, 80, 0.6);
+            border-color: #4CAF50;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+        }
+
+        .start-screen, .results-screen {
+            text-align: center;
+        }
+
+        .start-screen h2, .results-screen h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #FFD700;
+        }
+
+        .start-screen p, .results-screen p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .score-breakdown {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 1.5rem 0;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .final-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin-top: 1rem;
+        }
+
+        .instructions {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+
+        .instructions h3 {
+            color: #FFD700;
+            margin-bottom: 1rem;
+        }
+
+        .instructions ul {
+            list-style-position: inside;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 1.5rem;
+                margin: 0.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .cell {
+                width: 15px;
+                height: 15px;
+            }
+
+            .control-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+
+            .stats {
+                padding: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .cell {
+                width: 12px;
+                height: 12px;
+            }
+
+            .control-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1rem;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stat-item {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .difficulty-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.location.href='../../index.html'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="game-container">
+        <!-- Tela Inicial -->
+        <div class="start-screen" id="startScreen">
+            <h1>
+                <i class="fas fa-map"></i>
+                Labirinto
+            </h1>
+            <h2>Encontre a saída!</h2>
+            <p>Navegue pelo labirinto e encontre o caminho da entrada (verde) até a saída (vermelha).</p>
+            
+            <div class="instructions">
+                <h3>Como Jogar:</h3>
+                <ul>
+                    <li>Use as setas do teclado ou os botões na tela para mover</li>
+                    <li>Encontre o caminho da entrada (círculo verde) até a saída (círculo vermelho)</li>
+                    <li>Evite as paredes (blocos escuros)</li>
+                    <li>Tente completar no menor tempo possível</li>
+                </ul>
+            </div>
+            
+            <div class="difficulty-selector">
+                <button class="difficulty-btn active" data-size="15">
+                    <i class="fas fa-smile"></i> Fácil (15x15)
+                </button>
+                <button class="difficulty-btn" data-size="21">
+                    <i class="fas fa-meh"></i> Médio (21x21)
+                </button>
+                <button class="difficulty-btn" data-size="31">
+                    <i class="fas fa-frown"></i> Difícil (31x31)
+                </button>
+            </div>
+            
+            <button class="btn" onclick="startGame()">
+                <i class="fas fa-play"></i>
+                Começar Jogo
+            </button>
+        </div>
+
+        <!-- Tela do Jogo -->
+        <div class="game-screen" id="gameScreen" style="display: none;">
+            <h1>
+                <i class="fas fa-map"></i>
+                Labirinto
+            </h1>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">Nível</div>
+                    <div class="stat-value" id="level">1</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Tempo</div>
+                    <div class="stat-value" id="time">00:00</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Movimentos</div>
+                    <div class="stat-value" id="moves">0</div>
+                </div>
+            </div>
+
+            <div class="game-area">
+                <div class="maze-container">
+                    <div class="maze" id="maze"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn" onclick="movePlayer('up')">
+                    <i class="fas fa-arrow-up"></i>
+                </button>
+                <div style="width: 100%; display: flex; justify-content: space-between;">
+                    <button class="control-btn" onclick="movePlayer('left')">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <button class="control-btn" onclick="movePlayer('right')">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+                <button class="control-btn" onclick="movePlayer('down')">
+                    <i class="fas fa-arrow-down"></i>
+                </button>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="generateNewMaze()">
+                    <i class="fas fa-redo"></i>
+                    Novo Labirinto
+                </button>
+                <button class="btn btn-secondary" onclick="showSolution()">
+                    <i class="fas fa-lightbulb"></i>
+                    Mostrar Solução
+                </button>
+            </div>
+        </div>
+
+        <!-- Tela de Resultados -->
+        <div class="results-screen" id="resultsScreen" style="display: none;">
+            <h1>
+                <i class="fas fa-trophy"></i>
+                Parabéns!
+            </h1>
+            <h2 id="resultTitle">Labirinto Concluído!</h2>
+            <p id="resultMessage">Você encontrou a saída!</p>
+            
+            <div class="score-breakdown">
+                <div class="score-item">
+                    <span>Nível:</span>
+                    <span id="finalLevel">1</span>
+                </div>
+                <div class="score-item">
+                    <span>Tempo:</span>
+                    <span id="finalTime">00:00</span>
+                </div>
+                <div class="score-item">
+                    <span>Movimentos:</span>
+                    <span id="finalMoves">0</span>
+                </div>
+                <div class="score-item">
+                    <span>Eficiência:</span>
+                    <span id="efficiency">100%</span>
+                </div>
+                <div class="final-score">
+                    Classificação: <span id="classification">Excelente</span>
+                </div>
+            </div>
+
+            <button class="btn" onclick="nextLevel()">
+                <i class="fas fa-forward"></i>
+                Próximo Nível
+            </button>
+            <button class="btn btn-secondary" onclick="restartGame()">
+                <i class="fas fa-redo"></i>
+                Jogar Novamente
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='../../index.html'">
+                <i class="fas fa-home"></i>
+                Menu Principal
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Estado do jogo
+        let gameState = {
+            maze: [],
+            size: 15,
+            playerPos: { x: 1, y: 1 },
+            endPos: { x: 13, y: 13 },
+            level: 1,
+            moves: 0,
+            startTime: null,
+            timer: null,
+            gameActive: false,
+            visitedCells: new Set(),
+            solution: []
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDifficultyButtons();
+            setupKeyboardControls();
+        });
+
+        function setupDifficultyButtons() {
+            const buttons = document.querySelectorAll('.difficulty-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    gameState.size = parseInt(btn.dataset.size);
+                });
+            });
+        }
+
+        function setupKeyboardControls() {
+            document.addEventListener('keydown', (e) => {
+                if (!gameState.gameActive) return;
+                
+                switch(e.key) {
+                    case 'ArrowUp':
+                    case 'w':
+                    case 'W':
+                        e.preventDefault();
+                        movePlayer('up');
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                    case 'S':
+                        e.preventDefault();
+                        movePlayer('down');
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        e.preventDefault();
+                        movePlayer('left');
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                    case 'D':
+                        e.preventDefault();
+                        movePlayer('right');
+                        break;
+                }
+            });
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            
+            // Reset game state
+            gameState.level = 1;
+            gameState.moves = 0;
+            gameState.gameActive = true;
+            gameState.visitedCells.clear();
+            gameState.startTime = Date.now();
+            
+            generateMaze();
+            updateStats();
+            startTimer();
+        }
+
+        function generateMaze() {
+            const size = gameState.size;
+            gameState.maze = Array(size).fill().map(() => Array(size).fill(1)); // 1 = wall, 0 = path
+            
+            // Generate maze using recursive backtracking
+            const stack = [];
+            const start = { x: 1, y: 1 };
+            gameState.maze[start.y][start.x] = 0;
+            stack.push(start);
+            
+            while (stack.length > 0) {
+                const current = stack[stack.length - 1];
+                const neighbors = getUnvisitedNeighbors(current, size);
+                
+                if (neighbors.length > 0) {
+                    const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+                    
+                    // Remove wall between current and next
+                    const wallX = current.x + (next.x - current.x) / 2;
+                    const wallY = current.y + (next.y - current.y) / 2;
+                    gameState.maze[wallY][wallX] = 0;
+                    gameState.maze[next.y][next.x] = 0;
+                    
+                    stack.push(next);
+                } else {
+                    stack.pop();
+                }
+            }
+            
+            // Set player and end positions
+            gameState.playerPos = { x: 1, y: 1 };
+            gameState.endPos = { x: size - 2, y: size - 2 };
+            
+            renderMaze();
+        }
+
+        function getUnvisitedNeighbors(cell, size) {
+            const neighbors = [];
+            const directions = [
+                { x: 0, y: -2 }, // up
+                { x: 2, y: 0 },  // right
+                { x: 0, y: 2 },  // down
+                { x: -2, y: 0 }  // left
+            ];
+            
+            directions.forEach(dir => {
+                const newX = cell.x + dir.x;
+                const newY = cell.y + dir.y;
+                
+                if (newX > 0 && newX < size - 1 && 
+                    newY > 0 && newY < size - 1 && 
+                    gameState.maze[newY][newX] === 1) {
+                    neighbors.push({ x: newX, y: newY });
+                }
+            });
+            
+            return neighbors;
+        }
+
+        function renderMaze() {
+            const mazeElement = document.getElementById('maze');
+            mazeElement.innerHTML = '';
+            mazeElement.style.gridTemplateColumns = `repeat(${gameState.size}, 1fr)`;
+            
+            for (let y = 0; y < gameState.size; y++) {
+                for (let x = 0; x < gameState.size; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    
+                    if (gameState.maze[y][x] === 1) {
+                        cell.classList.add('wall');
+                    } else {
+                        cell.classList.add('path');
+                    }
+                    
+                    if (x === gameState.playerPos.x && y === gameState.playerPos.y) {
+                        cell.classList.add('player');
+                    }
+                    
+                    if (x === gameState.endPos.x && y === gameState.endPos.y) {
+                        cell.classList.add('end');
+                    }
+                    
+                    if (x === 1 && y === 1) {
+                        cell.classList.add('start');
+                    }
+                    
+                    const cellKey = `${x},${y}`;
+                    if (gameState.visitedCells.has(cellKey) && 
+                        !(x === gameState.playerPos.x && y === gameState.playerPos.y)) {
+                        cell.classList.add('visited');
+                    }
+                    
+                    mazeElement.appendChild(cell);
+                }
+            }
+        }
+
+        function movePlayer(direction) {
+            if (!gameState.gameActive) return;
+            
+            const { x, y } = gameState.playerPos;
+            let newX = x, newY = y;
+            
+            switch(direction) {
+                case 'up': newY--; break;
+                case 'down': newY++; break;
+                case 'left': newX--; break;
+                case 'right': newX++; break;
+            }
+            
+            // Check bounds and walls
+            if (newX >= 0 && newX < gameState.size && 
+                newY >= 0 && newY < gameState.size && 
+                gameState.maze[newY][newX] === 0) {
+                
+                // Mark current position as visited
+                const currentKey = `${x},${y}`;
+                gameState.visitedCells.add(currentKey);
+                
+                // Update player position
+                gameState.playerPos = { x: newX, y: newY };
+                gameState.moves++;
+                
+                renderMaze();
+                updateStats();
+                
+                // Check win condition
+                if (newX === gameState.endPos.x && newY === gameState.endPos.y) {
+                    winLevel();
+                }
+            }
+        }
+
+        function generateNewMaze() {
+            gameState.moves = 0;
+            gameState.visitedCells.clear();
+            gameState.startTime = Date.now();
+            generateMaze();
+            updateStats();
+        }
+
+        function showSolution() {
+            const solution = findPath();
+            if (solution.length > 0) {
+                highlightSolution(solution);
+            }
+        }
+
+        function findPath() {
+            const queue = [{ x: gameState.playerPos.x, y: gameState.playerPos.y, path: [] }];
+            const visited = new Set();
+            
+            while (queue.length > 0) {
+                const { x, y, path } = queue.shift();
+                const key = `${x},${y}`;
+                
+                if (visited.has(key)) continue;
+                visited.add(key);
+                
+                if (x === gameState.endPos.x && y === gameState.endPos.y) {
+                    return path;
+                }
+                
+                const directions = [
+                    { x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }
+                ];
+                
+                directions.forEach(dir => {
+                    const newX = x + dir.x;
+                    const newY = y + dir.y;
+                    
+                    if (newX >= 0 && newX < gameState.size && 
+                        newY >= 0 && newY < gameState.size && 
+                        gameState.maze[newY][newX] === 0 && 
+                        !visited.has(`${newX},${newY}`)) {
+                        
+                        queue.push({
+                            x: newX,
+                            y: newY,
+                            path: [...path, { x: newX, y: newY }]
+                        });
+                    }
+                });
+            }
+            
+            return [];
+        }
+
+        function highlightSolution(solution) {
+            solution.forEach((pos, index) => {
+                setTimeout(() => {
+                    const cell = document.querySelector(`[data-x="${pos.x}"][data-y="${pos.y}"]`);
+                    if (cell) {
+                        cell.style.background = '#f39c12';
+                        cell.style.boxShadow = '0 0 10px rgba(243, 156, 18, 0.8)';
+                    }
+                }, index * 100);
+            });
+            
+            setTimeout(() => {
+                renderMaze();
+            }, solution.length * 100 + 2000);
+        }
+
+        function startTimer() {
+            gameState.timer = setInterval(() => {
+                const elapsed = Date.now() - gameState.startTime;
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                document.getElementById('time').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function updateStats() {
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('moves').textContent = gameState.moves;
+        }
+
+        function winLevel() {
+            gameState.gameActive = false;
+            clearInterval(gameState.timer);
+            
+            setTimeout(() => {
+                document.getElementById('gameScreen').style.display = 'none';
+                document.getElementById('resultsScreen').style.display = 'block';
+                
+                const elapsed = Date.now() - gameState.startTime;
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Calculate efficiency (optimal path vs actual moves)
+                const optimalPath = findPath();
+                const efficiency = optimalPath.length > 0 ? 
+                    Math.round((optimalPath.length / gameState.moves) * 100) : 100;
+                
+                document.getElementById('finalLevel').textContent = gameState.level;
+                document.getElementById('finalTime').textContent = timeString;
+                document.getElementById('finalMoves').textContent = gameState.moves;
+                document.getElementById('efficiency').textContent = efficiency + '%';
+                
+                // Classification
+                let classification;
+                if (efficiency >= 90) {
+                    classification = 'Perfeito!';
+                } else if (efficiency >= 75) {
+                    classification = 'Excelente!';
+                } else if (efficiency >= 60) {
+                    classification = 'Muito Bom!';
+                } else if (efficiency >= 45) {
+                    classification = 'Bom!';
+                } else {
+                    classification = 'Pode Melhorar!';
+                }
+                
+                document.getElementById('classification').textContent = classification;
+                
+                // Result message
+                let title, message;
+                if (efficiency >= 90) {
+                    title = 'Navegador Perfeito!';
+                    message = 'Você encontrou um caminho quase ótimo!';
+                } else if (efficiency >= 75) {
+                    title = 'Excelente Navegação!';
+                    message = 'Você tem um ótimo senso de direção!';
+                } else if (efficiency >= 60) {
+                    title = 'Boa Navegação!';
+                    message = 'Você se orientou bem no labirinto!';
+                } else {
+                    title = 'Missão Cumprida!';
+                    message = 'Continue praticando para melhorar sua eficiência!';
+                }
+                
+                document.getElementById('resultTitle').textContent = title;
+                document.getElementById('resultMessage').textContent = message;
+            }, 1000);
+        }
+
+        function nextLevel() {
+            gameState.level++;
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            
+            gameState.moves = 0;
+            gameState.visitedCells.clear();
+            gameState.gameActive = true;
+            gameState.startTime = Date.now();
+            
+            generateMaze();
+            updateStats();
+            startTimer();
+        }
+
+        function restartGame() {
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+

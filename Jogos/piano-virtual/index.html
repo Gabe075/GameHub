@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Virtual - GameHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../common.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            padding: 1rem;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .piano-container {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.8rem 1rem;
+            border-radius: 15px;
+        }
+
+        .control-group label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .volume-slider, .octave-select {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            padding: 0.5rem;
+        }
+
+        .volume-slider {
+            width: 100px;
+        }
+
+        .octave-select {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .octave-select option {
+            background: #333;
+            color: white;
+        }
+
+        .piano {
+            background: #2c2c2c;
+            border-radius: 15px;
+            padding: 1rem;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        .keys-container {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            min-width: 700px;
+            height: 200px;
+        }
+
+        .key {
+            border: 2px solid #333;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            user-select: none;
+            position: relative;
+        }
+
+        .white-key {
+            background: linear-gradient(to bottom, #ffffff 0%, #f0f0f0 100%);
+            color: #333;
+            width: 50px;
+            height: 180px;
+            border-radius: 0 0 8px 8px;
+            padding-bottom: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .white-key:hover {
+            background: linear-gradient(to bottom, #f0f0f0 0%, #e0e0e0 100%);
+        }
+
+        .white-key.active {
+            background: linear-gradient(to bottom, #4CAF50 0%, #45a049 100%);
+            color: white;
+            transform: translateY(2px);
+        }
+
+        .black-key {
+            background: linear-gradient(to bottom, #333 0%, #111 100%);
+            color: white;
+            width: 30px;
+            height: 120px;
+            border-radius: 0 0 5px 5px;
+            position: absolute;
+            z-index: 2;
+            margin-left: -15px;
+            padding-bottom: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .black-key:hover {
+            background: linear-gradient(to bottom, #444 0%, #222 100%);
+        }
+
+        .black-key.active {
+            background: linear-gradient(to bottom, #FF5722 0%, #E64A19 100%);
+            transform: translateY(2px);
+        }
+
+        .songs-section {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .songs-section h3 {
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .songs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .song-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 1rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .song-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .song-btn.playing {
+            background: rgba(76, 175, 80, 0.6);
+            border-color: #4CAF50;
+        }
+
+        .instructions {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: left;
+        }
+
+        .instructions h3 {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .instructions li:before {
+            content: "♪";
+            position: absolute;
+            left: 0;
+            color: #FFD700;
+        }
+
+        .recording-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media (max-width: 768px) {
+            .piano-container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .keys-container {
+                min-width: 500px;
+                height: 150px;
+            }
+
+            .white-key {
+                width: 35px;
+                height: 130px;
+                font-size: 0.7rem;
+            }
+
+            .black-key {
+                width: 20px;
+                height: 90px;
+                margin-left: -10px;
+                font-size: 0.6rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .keys-container {
+                min-width: 400px;
+                height: 120px;
+            }
+
+            .white-key {
+                width: 28px;
+                height: 100px;
+                font-size: 0.6rem;
+            }
+
+            .black-key {
+                width: 16px;
+                height: 70px;
+                margin-left: -8px;
+                font-size: 0.5rem;
+            }
+
+            .recording-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.location.href='../../index.html'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="piano-container">
+        <h1>
+            <i class="fas fa-music"></i>
+            Piano Virtual
+        </h1>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="volume">Volume:</label>
+                <input type="range" id="volume" class="volume-slider" min="0" max="100" value="50">
+            </div>
+            <div class="control-group">
+                <label for="octave">Oitava:</label>
+                <select id="octave" class="octave-select">
+                    <option value="3">3</option>
+                    <option value="4" selected>4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="recording-controls">
+            <button class="btn btn-secondary" id="recordBtn" onclick="toggleRecording()">
+                <i class="fas fa-record-vinyl"></i>
+                Gravar
+            </button>
+            <button class="btn btn-success" id="playBtn" onclick="playRecording()" disabled>
+                <i class="fas fa-play"></i>
+                Reproduzir
+            </button>
+            <button class="btn" id="clearBtn" onclick="clearRecording()" disabled>
+                <i class="fas fa-trash"></i>
+                Limpar
+            </button>
+        </div>
+
+        <div class="piano">
+            <div class="keys-container" id="keysContainer">
+                <!-- Teclas serão geradas dinamicamente -->
+            </div>
+        </div>
+
+        <div class="songs-section">
+            <h3><i class="fas fa-music"></i> Músicas Pré-definidas</h3>
+            <div class="songs-grid">
+                <button class="song-btn" onclick="playSong('twinkle')">
+                    <strong>Brilha, Brilha Estrelinha</strong><br>
+                    <small>Música infantil clássica</small>
+                </button>
+                <button class="song-btn" onclick="playSong('happy')">
+                    <strong>Parabéns para Você</strong><br>
+                    <small>Canção de aniversário</small>
+                </button>
+                <button class="song-btn" onclick="playSong('mary')">
+                    <strong>Mary Had a Little Lamb</strong><br>
+                    <small>Canção tradicional</small>
+                </button>
+                <button class="song-btn" onclick="playSong('ode')">
+                    <strong>Ode to Joy</strong><br>
+                    <small>Beethoven (simplificado)</small>
+                </button>
+                <button class="song-btn" onclick="playSong('fur_elise')">
+                    <strong>Für Elise</strong><br>
+                    <small>Beethoven (início)</small>
+                </button>
+                <button class="song-btn" onclick="playSong('canon')">
+                    <strong>Canon in D</strong><br>
+                    <small>Pachelbel (melodia)</small>
+                </button>
+                <button class="song-btn" onclick="playSong('amazing_grace')">
+                    <strong>Amazing Grace</strong><br>
+                    <small>Hino tradicional</small>
+                </button>
+                <button class="song-btn" onclick="playSong('jingle_bells')">
+                    <strong>Jingle Bells</strong><br>
+                    <small>Música natalina</small>
+                </button>
+                <button class="song-btn" onclick="playSong('greensleeves')">
+                    <strong>Greensleeves</strong><br>
+                    <small>Balada inglesa</small>
+                </button>
+                <button class="song-btn" onclick="playSong('moonlight')">
+                    <strong>Moonlight Sonata</strong><br>
+                    <small>Beethoven (tema)</small>
+                </button>
+                <button class="song-btn" onclick="playSong('entertainer')">
+                    <strong>The Entertainer</strong><br>
+                    <small>Scott Joplin (ragtime)</small>
+                </button>
+                <button class="song-btn" onclick="playSong('claire_de_lune')">
+                    <strong>Clair de Lune</strong><br>
+                    <small>Debussy (tema)</small>
+                </button>
+                <button class="song-btn" onclick="playSong('ave_maria')">
+                    <strong>Ave Maria</strong><br>
+                    <small>Schubert (melodia)</small>
+                </button>
+                <button class="song-btn" onclick="playSong('turkish_march')">
+                    <strong>Turkish March</strong><br>
+                    <small>Mozart (tema)</small>
+                </button>
+                <button class="song-btn" onclick="playSong('spring')">
+                    <strong>Spring (Vivaldi)</strong><br>
+                    <small>As Quatro Estações</small>
+                </button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Como Usar</h3>
+            <ul>
+                <li>Clique nas teclas para tocar as notas</li>
+                <li>Use as teclas do computador: A, S, D, F, G, H, J (teclas brancas) e W, E, T, Y, U (teclas pretas)</li>
+                <li>Ajuste o volume e a oitava nos controles acima</li>
+                <li>Grave suas próprias melodias usando o botão "Gravar"</li>
+                <li>Toque músicas pré-definidas clicando nos botões de música</li>
+                <li>Use o mouse ou toque na tela (dispositivos móveis) para tocar</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do piano
+        const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const whiteKeys = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+        const blackKeys = ['C#', 'D#', 'F#', 'G#', 'A#'];
+        
+        let audioContext;
+        let volume = 0.5;
+        let octave = 4;
+        let isRecording = false;
+        let recording = [];
+        let recordingStartTime = 0;
+        let currentSong = null;
+
+        // Mapeamento de teclas do teclado
+        const keyMap = {
+            'a': 'C', 's': 'D', 'd': 'E', 'f': 'F', 'g': 'G', 'h': 'A', 'j': 'B',
+            'w': 'C#', 'e': 'D#', 't': 'F#', 'y': 'G#', 'u': 'A#'
+        };
+
+        // Músicas pré-definidas
+        const songs = {
+            twinkle: [
+                {note: 'C', duration: 500}, {note: 'C', duration: 500}, {note: 'G', duration: 500}, {note: 'G', duration: 500},
+                {note: 'A', duration: 500}, {note: 'A', duration: 500}, {note: 'G', duration: 1000},
+                {note: 'F', duration: 500}, {note: 'F', duration: 500}, {note: 'E', duration: 500}, {note: 'E', duration: 500},
+                {note: 'D', duration: 500}, {note: 'D', duration: 500}, {note: 'C', duration: 1000}
+            ],
+            happy: [
+                {note: 'C', duration: 250}, {note: 'C', duration: 250}, {note: 'D', duration: 500}, {note: 'C', duration: 500},
+                {note: 'F', duration: 500}, {note: 'E', duration: 1000},
+                {note: 'C', duration: 250}, {note: 'C', duration: 250}, {note: 'D', duration: 500}, {note: 'C', duration: 500},
+                {note: 'G', duration: 500}, {note: 'F', duration: 1000}
+            ],
+            mary: [
+                {note: 'E', duration: 500}, {note: 'D', duration: 500}, {note: 'C', duration: 500}, {note: 'D', duration: 500},
+                {note: 'E', duration: 500}, {note: 'E', duration: 500}, {note: 'E', duration: 1000},
+                {note: 'D', duration: 500}, {note: 'D', duration: 500}, {note: 'D', duration: 1000},
+                {note: 'E', duration: 500}, {note: 'G', duration: 500}, {note: 'G', duration: 1000}
+            ],
+            ode: [
+                {note: 'E', duration: 500}, {note: 'E', duration: 500}, {note: 'F', duration: 500}, {note: 'G', duration: 500},
+                {note: 'G', duration: 500}, {note: 'F', duration: 500}, {note: 'E', duration: 500}, {note: 'D', duration: 500},
+                {note: 'C', duration: 500}, {note: 'C', duration: 500}, {note: 'D', duration: 500}, {note: 'E', duration: 500},
+                {note: 'E', duration: 750}, {note: 'D', duration: 250}, {note: 'D', duration: 1000}
+            ],
+            fur_elise: [
+                {note: 'E', duration: 400}, {note: 'D#', duration: 400}, {note: 'E', duration: 400}, {note: 'D#', duration: 400},
+                {note: 'E', duration: 400}, {note: 'B', duration: 400}, {note: 'D', duration: 400}, {note: 'C', duration: 400},
+                {note: 'A', duration: 800}, {note: 'C', duration: 400}, {note: 'E', duration: 400}, {note: 'A', duration: 400},
+                {note: 'B', duration: 800}
+            ],
+            canon: [
+                {note: 'D', duration: 1000}, {note: 'A', duration: 1000}, {note: 'B', duration: 1000}, {note: 'F#', duration: 1000},
+                {note: 'G', duration: 1000}, {note: 'D', duration: 1000}, {note: 'G', duration: 1000}, {note: 'A', duration: 1000},
+                {note: 'D', duration: 500}, {note: 'F#', duration: 500}, {note: 'A', duration: 500}, {note: 'G', duration: 500},
+                {note: 'F#', duration: 500}, {note: 'D', duration: 500}, {note: 'F#', duration: 500}, {note: 'E', duration: 500}
+            ],
+            amazing_grace: [
+                {note: 'D', duration: 750}, {note: 'G', duration: 1250}, {note: 'B', duration: 500}, {note: 'G', duration: 500},
+                {note: 'B', duration: 1000}, {note: 'A', duration: 1000}, {note: 'G', duration: 1500},
+                {note: 'D', duration: 750}, {note: 'G', duration: 1250}, {note: 'B', duration: 500}, {note: 'G', duration: 500},
+                {note: 'B', duration: 1000}, {note: 'A', duration: 2000}
+            ],
+            jingle_bells: [
+                {note: 'E', duration: 500}, {note: 'E', duration: 500}, {note: 'E', duration: 1000},
+                {note: 'E', duration: 500}, {note: 'E', duration: 500}, {note: 'E', duration: 1000},
+                {note: 'E', duration: 500}, {note: 'G', duration: 500}, {note: 'C', duration: 500}, {note: 'D', duration: 500},
+                {note: 'E', duration: 2000}
+            ],
+            greensleeves: [
+                {note: 'A', duration: 1000}, {note: 'C', duration: 500}, {note: 'D', duration: 1000}, {note: 'E', duration: 500},
+                {note: 'F', duration: 750}, {note: 'E', duration: 250}, {note: 'D', duration: 1000}, {note: 'B', duration: 500},
+                {note: 'G', duration: 750}, {note: 'A', duration: 250}, {note: 'B', duration: 1000}, {note: 'C', duration: 500},
+                {note: 'D', duration: 750}, {note: 'C', duration: 250}, {note: 'B', duration: 1000}, {note: 'A', duration: 500}
+            ],
+            moonlight: [
+                {note: 'G#', duration: 1000}, {note: 'C#', duration: 1000}, {note: 'E', duration: 1000},
+                {note: 'G#', duration: 1000}, {note: 'C#', duration: 1000}, {note: 'E', duration: 1000},
+                {note: 'G#', duration: 1000}, {note: 'C#', duration: 1000}, {note: 'F#', duration: 1000},
+                {note: 'G#', duration: 1000}, {note: 'C#', duration: 1000}, {note: 'F#', duration: 1000}
+            ],
+            entertainer: [
+                {note: 'D', duration: 250}, {note: 'E', duration: 250}, {note: 'C', duration: 500}, {note: 'A', duration: 250},
+                {note: 'B', duration: 250}, {note: 'G', duration: 500}, {note: 'D', duration: 250}, {note: 'E', duration: 250},
+                {note: 'C', duration: 500}, {note: 'A', duration: 250}, {note: 'B', duration: 250}, {note: 'A', duration: 250},
+                {note: 'G#', duration: 250}, {note: 'A', duration: 500}
+            ],
+            claire_de_lune: [
+                {note: 'F', duration: 1500}, {note: 'G', duration: 500}, {note: 'A', duration: 1000}, {note: 'F', duration: 1000},
+                {note: 'D', duration: 1000}, {note: 'F', duration: 1000}, {note: 'E', duration: 2000},
+                {note: 'F', duration: 1500}, {note: 'G', duration: 500}, {note: 'A', duration: 1000}, {note: 'C', duration: 1000},
+                {note: 'B', duration: 1000}, {note: 'A', duration: 1000}, {note: 'G', duration: 2000}
+            ],
+            ave_maria: [
+                {note: 'C', duration: 1000}, {note: 'F', duration: 1000}, {note: 'F', duration: 1000}, {note: 'F', duration: 500},
+                {note: 'G', duration: 500}, {note: 'A', duration: 1000}, {note: 'A', duration: 1000}, {note: 'G', duration: 2000},
+                {note: 'C', duration: 1000}, {note: 'F', duration: 1000}, {note: 'F', duration: 1000}, {note: 'F', duration: 500},
+                {note: 'G', duration: 500}, {note: 'A', duration: 1000}, {note: 'A', duration: 1000}, {note: 'G', duration: 2000}
+            ],
+            turkish_march: [
+                {note: 'B', duration: 250}, {note: 'A', duration: 250}, {note: 'G#', duration: 250}, {note: 'A', duration: 250},
+                {note: 'C', duration: 500}, {note: 'D', duration: 250}, {note: 'C', duration: 250}, {note: 'B', duration: 250},
+                {note: 'C', duration: 250}, {note: 'E', duration: 500}, {note: 'F', duration: 250}, {note: 'E', duration: 250},
+                {note: 'D#', duration: 250}, {note: 'E', duration: 250}, {note: 'B', duration: 250}, {note: 'C', duration: 250}
+            ],
+            spring: [
+                {note: 'E', duration: 500}, {note: 'E', duration: 500}, {note: 'E', duration: 500}, {note: 'E', duration: 500},
+                {note: 'E', duration: 500}, {note: 'E', duration: 500}, {note: 'E', duration: 500}, {note: 'E', duration: 500},
+                {note: 'G', duration: 500}, {note: 'F#', duration: 500}, {note: 'E', duration: 500}, {note: 'D', duration: 500},
+                {note: 'C#', duration: 500}, {note: 'D', duration: 500}, {note: 'E', duration: 1000}
+            ]
+        };
+
+        // Inicializar o piano
+        function initPiano() {
+            createKeys();
+            setupEventListeners();
+            initAudioContext();
+        }
+
+        function initAudioContext() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function createKeys() {
+            const container = document.getElementById('keysContainer');
+            container.innerHTML = '';
+
+            // Criar teclas brancas
+            whiteKeys.forEach((note, index) => {
+                const key = document.createElement('div');
+                key.className = 'key white-key';
+                key.dataset.note = note;
+                key.textContent = note;
+                key.style.left = `${index * 50}px`;
+                key.addEventListener('mousedown', () => playNote(note));
+                key.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    playNote(note);
+                });
+                container.appendChild(key);
+            });
+
+            // Criar teclas pretas
+            const blackKeyPositions = [35, 85, 185, 235, 285]; // Posições das teclas pretas
+            blackKeys.forEach((note, index) => {
+                const key = document.createElement('div');
+                key.className = 'key black-key';
+                key.dataset.note = note;
+                key.textContent = note;
+                key.style.left = `${blackKeyPositions[index]}px`;
+                key.addEventListener('mousedown', () => playNote(note));
+                key.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    playNote(note);
+                });
+                container.appendChild(key);
+            });
+        }
+
+        function setupEventListeners() {
+            // Volume control
+            document.getElementById('volume').addEventListener('input', (e) => {
+                volume = e.target.value / 100;
+            });
+
+            // Octave control
+            document.getElementById('octave').addEventListener('change', (e) => {
+                octave = parseInt(e.target.value);
+            });
+
+            // Keyboard events
+            document.addEventListener('keydown', (e) => {
+                const note = keyMap[e.key.toLowerCase()];
+                if (note && !e.repeat) {
+                    playNote(note);
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                const note = keyMap[e.key.toLowerCase()];
+                if (note) {
+                    stopNote(note);
+                }
+            });
+
+            // Mouse/touch events for key release
+            document.addEventListener('mouseup', () => {
+                document.querySelectorAll('.key.active').forEach(key => {
+                    key.classList.remove('active');
+                });
+            });
+
+            document.addEventListener('touchend', () => {
+                document.querySelectorAll('.key.active').forEach(key => {
+                    key.classList.remove('active');
+                });
+            });
+        }
+
+        function getFrequency(note) {
+            const noteIndex = notes.indexOf(note);
+            const A4 = 440;
+            const C4 = A4 * Math.pow(2, -9/12);
+            return C4 * Math.pow(2, (octave - 4) + noteIndex/12);
+        }
+
+        function playNote(note) {
+            if (!audioContext) {
+                initAudioContext();
+            }
+
+            // Ativar contexto de áudio se necessário
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            const frequency = getFrequency(note);
+            
+            // Criar oscilador
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(volume * 0.3, audioContext.currentTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+
+            // Efeito visual
+            const keyElement = document.querySelector(`[data-note="${note}"]`);
+            if (keyElement) {
+                keyElement.classList.add('active');
+                setTimeout(() => keyElement.classList.remove('active'), 200);
+            }
+
+            // Gravar nota se estiver gravando
+            if (isRecording) {
+                recording.push({
+                    note: note,
+                    time: Date.now() - recordingStartTime
+                });
+            }
+        }
+
+        function stopNote(note) {
+            const keyElement = document.querySelector(`[data-note="${note}"]`);
+            if (keyElement) {
+                keyElement.classList.remove('active');
+            }
+        }
+
+        function toggleRecording() {
+            const recordBtn = document.getElementById('recordBtn');
+            const playBtn = document.getElementById('playBtn');
+            const clearBtn = document.getElementById('clearBtn');
+
+            if (!isRecording) {
+                // Iniciar gravação
+                isRecording = true;
+                recording = [];
+                recordingStartTime = Date.now();
+                recordBtn.innerHTML = '<i class="fas fa-stop"></i> Parar';
+                recordBtn.style.background = 'linear-gradient(45deg, #ff6b6b, #ee5a24)';
+                playBtn.disabled = true;
+                clearBtn.disabled = true;
+            } else {
+                // Parar gravação
+                isRecording = false;
+                recordBtn.innerHTML = '<i class="fas fa-record-vinyl"></i> Gravar';
+                recordBtn.style.background = 'linear-gradient(45deg, #74b9ff, #0984e3)';
+                playBtn.disabled = recording.length === 0;
+                clearBtn.disabled = recording.length === 0;
+            }
+        }
+
+        function playRecording() {
+            if (recording.length === 0) return;
+
+            const playBtn = document.getElementById('playBtn');
+            playBtn.disabled = true;
+            playBtn.innerHTML = '<i class="fas fa-pause"></i> Reproduzindo...';
+
+            recording.forEach((noteData, index) => {
+                setTimeout(() => {
+                    playNote(noteData.note);
+                    
+                    // Reabilitar botão após última nota
+                    if (index === recording.length - 1) {
+                        setTimeout(() => {
+                            playBtn.disabled = false;
+                            playBtn.innerHTML = '<i class="fas fa-play"></i> Reproduzir';
+                        }, 500);
+                    }
+                }, noteData.time);
+            });
+        }
+
+        function clearRecording() {
+            recording = [];
+            document.getElementById('playBtn').disabled = true;
+            document.getElementById('clearBtn').disabled = true;
+        }
+
+        function playSong(songName) {
+            if (currentSong) return; // Evitar múltiplas reproduções simultâneas
+
+            const song = songs[songName];
+            if (!song) return;
+
+            currentSong = songName;
+            const songBtn = document.querySelector(`[onclick="playSong('${songName}')"]`);
+            songBtn.classList.add('playing');
+            songBtn.innerHTML = songBtn.innerHTML.replace('</small>', '</small><br><small style="color: #4CAF50;">♪ Tocando...</small>');
+
+            let currentTime = 0;
+            song.forEach((noteData, index) => {
+                setTimeout(() => {
+                    playNote(noteData.note);
+                    
+                    // Limpar estado após última nota
+                    if (index === song.length - 1) {
+                        setTimeout(() => {
+                            currentSong = null;
+                            songBtn.classList.remove('playing');
+                            songBtn.innerHTML = songBtn.innerHTML.replace('<br><small style="color: #4CAF50;">♪ Tocando...</small>', '');
+                        }, noteData.duration);
+                    }
+                }, currentTime);
+                
+                currentTime += noteData.duration;
+            });
+        }
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', initPiano);
+    </script>
+</body>
+</html>
+

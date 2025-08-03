@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Conhecimentos - GameHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../common.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            padding: 1rem;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .quiz-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .question-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .question-number {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .answer-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-align: left;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .answer-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .answer-btn.correct {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: #4CAF50;
+            animation: correctAnswer 0.6s ease;
+        }
+
+        .answer-btn.incorrect {
+            background: rgba(244, 67, 54, 0.8);
+            border-color: #f44336;
+            animation: incorrectAnswer 0.6s ease;
+        }
+
+        .answer-btn.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        @keyframes correctAnswer {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes incorrectAnswer {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .next-btn {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: none;
+            margin: 1rem auto;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .start-screen, .results-screen {
+            text-align: center;
+        }
+
+        .start-screen h2, .results-screen h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #FFD700;
+        }
+
+        .start-screen p, .results-screen p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+        }
+
+        .score-breakdown {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 1.5rem 0;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .final-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .quiz-container {
+                padding: 1.5rem;
+                margin: 0.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .quiz-stats {
+                padding: 0.8rem;
+            }
+
+            .question-container {
+                padding: 1.5rem;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+            }
+
+            .answer-btn {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quiz-container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .quiz-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stat-item {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.location.href='../../index.html'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="quiz-container">
+        <!-- Tela Inicial -->
+        <div class="start-screen" id="startScreen">
+            <h1>
+                <i class="fas fa-question-circle"></i>
+                Quiz de Conhecimentos
+            </h1>
+            <h2>Teste seus conhecimentos!</h2>
+            <p>Responda perguntas sobre diversos temas e descubra o quanto você sabe. Cada pergunta vale 10 pontos! Temos mais de 150 perguntas sobre História, Ciências, Geografia, Arte, Esportes e muito mais!</p>
+            <button class="btn" onclick="startQuiz()">
+                <i class="fas fa-play"></i>
+                Começar Quiz
+            </button>
+        </div>
+
+        <!-- Tela do Quiz -->
+        <div class="quiz-screen" id="quizScreen" style="display: none;">
+            <h1>
+                <i class="fas fa-question-circle"></i>
+                Quiz de Conhecimentos
+            </h1>
+            
+            <div class="quiz-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Pergunta</div>
+                    <div class="stat-value" id="currentQuestion">1</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Pontuação</div>
+                    <div class="stat-value" id="currentScore">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Tempo</div>
+                    <div class="stat-value" id="timeLeft">30</div>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 10%"></div>
+            </div>
+
+            <div class="question-container">
+                <div class="question-number" id="questionNumber">Pergunta 1 de 10</div>
+                <div class="question-text" id="questionText">Carregando pergunta...</div>
+                <div class="answers-grid" id="answersGrid">
+                    <!-- Respostas serão inseridas aqui -->
+                </div>
+            </div>
+
+            <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
+                <i class="fas fa-arrow-right"></i>
+                Próxima Pergunta
+            </button>
+        </div>
+
+        <!-- Tela de Resultados -->
+        <div class="results-screen" id="resultsScreen" style="display: none;">
+            <h1>
+                <i class="fas fa-trophy"></i>
+                Resultados
+            </h1>
+            <h2 id="resultTitle">Parabéns!</h2>
+            <p id="resultMessage">Você completou o quiz!</p>
+            
+            <div class="score-breakdown">
+                <div class="score-item">
+                    <span>Respostas Corretas:</span>
+                    <span id="correctAnswers">0</span>
+                </div>
+                <div class="score-item">
+                    <span>Respostas Incorretas:</span>
+                    <span id="incorrectAnswers">0</span>
+                </div>
+                <div class="score-item">
+                    <span>Precisão:</span>
+                    <span id="accuracy">0%</span>
+                </div>
+                <div class="final-score">
+                    Pontuação Final: <span id="finalScore">0</span>
+                </div>
+            </div>
+
+            <button class="btn" onclick="restartQuiz()">
+                <i class="fas fa-redo"></i>
+                Jogar Novamente
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='../../index.html'">
+                <i class="fas fa-home"></i>
+                Menu Principal
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            // História
+            {
+                question: "Qual é a capital do Brasil?",
+                answers: ["São Paulo", "Rio de Janeiro", "Brasília", "Belo Horizonte"],
+                correct: 2
+            },
+            {
+                question: "Em que ano o homem pisou na Lua pela primeira vez?",
+                answers: ["1967", "1969", "1971", "1973"],
+                correct: 1
+            },
+            {
+                question: "Quem foi o primeiro presidente do Brasil?",
+                answers: ["Getúlio Vargas", "Deodoro da Fonseca", "Juscelino Kubitschek", "Prudente de Morais"],
+                correct: 1
+            },
+            {
+                question: "Em que ano começou a Segunda Guerra Mundial?",
+                answers: ["1937", "1939", "1941", "1943"],
+                correct: 1
+            },
+            {
+                question: "Qual império construiu Machu Picchu?",
+                answers: ["Asteca", "Maia", "Inca", "Olmeca"],
+                correct: 2
+            },
+            {
+                question: "Em que ano caiu o Muro de Berlim?",
+                answers: ["1987", "1989", "1991", "1993"],
+                correct: 1
+            },
+            {
+                question: "Quem foi Napoleão Bonaparte?",
+                answers: ["Rei da França", "Imperador da França", "Presidente da França", "Duque da França"],
+                correct: 1
+            },
+            {
+                question: "Qual foi a primeira capital do Brasil?",
+                answers: ["Rio de Janeiro", "Salvador", "São Paulo", "Recife"],
+                correct: 1
+            },
+            {
+                question: "Em que século viveu Leonardo da Vinci?",
+                answers: ["XIV", "XV", "XVI", "XVII"],
+                correct: 2
+            },
+            {
+                question: "Qual país presenteou os EUA com a Estátua da Liberdade?",
+                answers: ["Inglaterra", "França", "Espanha", "Itália"],
+                correct: 1
+            },
+            
+            // Arte e Literatura
+            {
+                question: "Quem pintou a obra 'Mona Lisa'?",
+                answers: ["Vincent van Gogh", "Leonardo da Vinci", "Pablo Picasso", "Michelangelo"],
+                correct: 1
+            },
+            {
+                question: "Quem escreveu 'Dom Casmurro'?",
+                answers: ["José de Alencar", "Machado de Assis", "Clarice Lispector", "Guimarães Rosa"],
+                correct: 1
+            },
+            {
+                question: "Qual é a obra mais famosa de William Shakespeare?",
+                answers: ["Hamlet", "Romeu e Julieta", "Macbeth", "Rei Lear"],
+                correct: 1
+            },
+            {
+                question: "Quem pintou 'A Noite Estrelada'?",
+                answers: ["Claude Monet", "Vincent van Gogh", "Pablo Picasso", "Salvador Dalí"],
+                correct: 1
+            },
+            {
+                question: "Qual escritor criou o personagem Sherlock Holmes?",
+                answers: ["Agatha Christie", "Arthur Conan Doyle", "Edgar Allan Poe", "Charles Dickens"],
+                correct: 1
+            },
+            {
+                question: "Quem escreveu 'O Pequeno Príncipe'?",
+                answers: ["Antoine de Saint-Exupéry", "Jules Verne", "Victor Hugo", "Marcel Proust"],
+                correct: 0
+            },
+            {
+                question: "Qual movimento artístico Pablo Picasso ajudou a fundar?",
+                answers: ["Impressionismo", "Cubismo", "Surrealismo", "Expressionismo"],
+                correct: 1
+            },
+            {
+                question: "Quem compôs 'A Nona Sinfonia'?",
+                answers: ["Mozart", "Bach", "Beethoven", "Chopin"],
+                correct: 2
+            },
+            {
+                question: "Qual é o livro mais vendido de todos os tempos (excluindo textos religiosos)?",
+                answers: ["Dom Quixote", "O Senhor dos Anéis", "Harry Potter", "1984"],
+                correct: 0
+            },
+            {
+                question: "Quem pintou o teto da Capela Sistina?",
+                answers: ["Leonardo da Vinci", "Rafael", "Michelangelo", "Donatello"],
+                correct: 2
+            },
+            
+            // Ciências
+            {
+                question: "Qual é o maior planeta do sistema solar?",
+                answers: ["Terra", "Saturno", "Netuno", "Júpiter"],
+                correct: 3
+            },
+            {
+                question: "Qual é o elemento químico representado pelo símbolo 'O'?",
+                answers: ["Ouro", "Oxigênio", "Ósmio", "Ozônio"],
+                correct: 1
+            },
+            {
+                question: "Qual é a fórmula química da água?",
+                answers: ["H2O", "CO2", "NaCl", "CH4"],
+                correct: 0
+            },
+            {
+                question: "Qual é a velocidade da luz no vácuo?",
+                answers: ["300.000 km/s", "150.000 km/s", "450.000 km/s", "600.000 km/s"],
+                correct: 0
+            },
+            {
+                question: "Quem desenvolveu a teoria da relatividade?",
+                answers: ["Isaac Newton", "Albert Einstein", "Galileu Galilei", "Stephen Hawking"],
+                correct: 1
+            },
+            {
+                question: "Qual é o menor osso do corpo humano?",
+                answers: ["Estribo", "Martelo", "Bigorna", "Escafoide"],
+                correct: 0
+            },
+            {
+                question: "Quantos cromossomos tem o ser humano?",
+                answers: ["44", "46", "48", "50"],
+                correct: 1
+            },
+            {
+                question: "Qual é o gás mais abundante na atmosfera terrestre?",
+                answers: ["Oxigênio", "Nitrogênio", "Dióxido de carbono", "Argônio"],
+                correct: 1
+            },
+            {
+                question: "Qual é a unidade básica da vida?",
+                answers: ["Átomo", "Molécula", "Célula", "Tecido"],
+                correct: 2
+            },
+            {
+                question: "Qual planeta é conhecido como 'Planeta Vermelho'?",
+                answers: ["Vênus", "Marte", "Júpiter", "Saturno"],
+                correct: 1
+            },
+            
+            // Geografia
+            {
+                question: "Em que continente fica o Egito?",
+                answers: ["Ásia", "Europa", "África", "América"],
+                correct: 2
+            },
+            {
+                question: "Qual é o maior país do mundo em área?",
+                answers: ["China", "Canadá", "Estados Unidos", "Rússia"],
+                correct: 3
+            },
+            {
+                question: "Qual é o rio mais longo do mundo?",
+                answers: ["Amazonas", "Nilo", "Mississippi", "Yangtzé"],
+                correct: 1
+            },
+            {
+                question: "Qual é a montanha mais alta do mundo?",
+                answers: ["K2", "Monte Everest", "Kangchenjunga", "Lhotse"],
+                correct: 1
+            },
+            {
+                question: "Qual é o menor país do mundo?",
+                answers: ["Mônaco", "Vaticano", "San Marino", "Liechtenstein"],
+                correct: 1
+            },
+            {
+                question: "Qual oceano banha a costa leste do Brasil?",
+                answers: ["Pacífico", "Atlântico", "Índico", "Ártico"],
+                correct: 1
+            },
+            {
+                question: "Qual é a capital da Austrália?",
+                answers: ["Sydney", "Melbourne", "Canberra", "Perth"],
+                correct: 2
+            },
+            {
+                question: "Quantos continentes existem?",
+                answers: ["5", "6", "7", "8"],
+                correct: 2
+            },
+            {
+                question: "Qual é o deserto mais quente do mundo?",
+                answers: ["Saara", "Kalahari", "Atacama", "Gobi"],
+                correct: 0
+            },
+            {
+                question: "Qual país tem mais fusos horários?",
+                answers: ["Rússia", "Estados Unidos", "China", "França"],
+                correct: 3
+            },
+            
+            // Matemática
+            {
+                question: "Quantos lados tem um hexágono?",
+                answers: ["5", "6", "7", "8"],
+                correct: 1
+            },
+            {
+                question: "Qual é o valor de π (pi) aproximadamente?",
+                answers: ["3,14", "2,71", "1,41", "1,73"],
+                correct: 0
+            },
+            {
+                question: "Quanto é 12 × 12?",
+                answers: ["144", "124", "134", "154"],
+                correct: 0
+            },
+            {
+                question: "Qual é a raiz quadrada de 64?",
+                answers: ["6", "7", "8", "9"],
+                correct: 2
+            },
+            {
+                question: "Quantos graus tem um círculo completo?",
+                answers: ["180°", "270°", "360°", "450°"],
+                correct: 2
+            },
+            {
+                question: "Qual é o resultado de 2³?",
+                answers: ["6", "8", "9", "12"],
+                correct: 1
+            },
+            {
+                question: "Quantos lados tem um triângulo?",
+                answers: ["2", "3", "4", "5"],
+                correct: 1
+            },
+            {
+                question: "Qual é o número primo entre as opções?",
+                answers: ["15", "21", "17", "25"],
+                correct: 2
+            },
+            {
+                question: "Quanto é 50% de 200?",
+                answers: ["50", "75", "100", "150"],
+                correct: 2
+            },
+            {
+                question: "Qual é a fórmula da área do círculo?",
+                answers: ["πr²", "2πr", "πd", "r²"],
+                correct: 0
+            },
+            
+            // Esportes
+            {
+                question: "Quantos jogadores tem um time de futebol em campo?",
+                answers: ["10", "11", "12", "13"],
+                correct: 1
+            },
+            {
+                question: "Em que esporte se usa uma raquete?",
+                answers: ["Futebol", "Basquete", "Tênis", "Natação"],
+                correct: 2
+            },
+            {
+                question: "Quantos anéis olímpicos existem?",
+                answers: ["4", "5", "6", "7"],
+                correct: 1
+            },
+            {
+                question: "Qual é o esporte mais popular do mundo?",
+                answers: ["Basquete", "Futebol", "Tênis", "Vôlei"],
+                correct: 1
+            },
+            {
+                question: "Em que país nasceu o futebol moderno?",
+                answers: ["Brasil", "Argentina", "Inglaterra", "Alemanha"],
+                correct: 2
+            },
+            {
+                question: "Quantos sets tem uma partida de vôlei?",
+                answers: ["3", "4", "5", "Máximo 5"],
+                correct: 3
+            },
+            {
+                question: "Qual é a distância de uma maratona?",
+                answers: ["40,2 km", "42,195 km", "45 km", "50 km"],
+                correct: 1
+            },
+            {
+                question: "Em que esporte Michael Jordan se destacou?",
+                answers: ["Futebol", "Tênis", "Basquete", "Beisebol"],
+                correct: 2
+            },
+            {
+                question: "Quantos jogadores tem uma equipe de basquete em quadra?",
+                answers: ["4", "5", "6", "7"],
+                correct: 1
+            },
+            {
+                question: "Qual país sediou a Copa do Mundo de 2014?",
+                answers: ["Argentina", "Brasil", "Alemanha", "Rússia"],
+                correct: 1
+            },
+            
+            // Tecnologia
+            {
+                question: "Quem fundou a Microsoft?",
+                answers: ["Steve Jobs", "Bill Gates", "Mark Zuckerberg", "Larry Page"],
+                correct: 1
+            },
+            {
+                question: "O que significa 'WWW'?",
+                answers: ["World Wide Web", "World Web Wide", "Wide World Web", "Web World Wide"],
+                correct: 0
+            },
+            {
+                question: "Qual empresa criou o iPhone?",
+                answers: ["Samsung", "Google", "Apple", "Microsoft"],
+                correct: 2
+            },
+            {
+                question: "Em que ano foi criado o Facebook?",
+                answers: ["2003", "2004", "2005", "2006"],
+                correct: 1
+            },
+            {
+                question: "O que é HTML?",
+                answers: ["Linguagem de programação", "Linguagem de marcação", "Sistema operacional", "Navegador"],
+                correct: 1
+            },
+            {
+                question: "Qual é a unidade básica de informação em computação?",
+                answers: ["Bit", "Byte", "Kilobyte", "Megabyte"],
+                correct: 0
+            },
+            {
+                question: "Quem criou o sistema operacional Linux?",
+                answers: ["Bill Gates", "Steve Jobs", "Linus Torvalds", "Larry Ellison"],
+                correct: 2
+            },
+            {
+                question: "O que significa 'CPU'?",
+                answers: ["Central Processing Unit", "Computer Personal Unit", "Central Personal Unit", "Computer Processing Unit"],
+                correct: 0
+            },
+            {
+                question: "Qual empresa desenvolveu o Android?",
+                answers: ["Apple", "Microsoft", "Google", "Samsung"],
+                correct: 2
+            },
+            {
+                question: "Em que ano foi lançado o primeiro iPhone?",
+                answers: ["2005", "2006", "2007", "2008"],
+                correct: 2
+            },
+            
+            // Natureza e Animais
+            {
+                question: "Qual é o maior mamífero do mundo?",
+                answers: ["Elefante", "Baleia-azul", "Girafa", "Rinoceronte"],
+                correct: 1
+            },
+            {
+                question: "Quantas patas tem uma aranha?",
+                answers: ["6", "8", "10", "12"],
+                correct: 1
+            },
+            {
+                question: "Qual animal é conhecido como 'rei da selva'?",
+                answers: ["Tigre", "Leopardo", "Leão", "Jaguar"],
+                correct: 2
+            },
+            {
+                question: "Qual é o animal mais rápido do mundo?",
+                answers: ["Guepardo", "Falcão-peregrino", "Antílope", "Cavalo"],
+                correct: 1
+            },
+            {
+                question: "Quantos corações tem um polvo?",
+                answers: ["1", "2", "3", "4"],
+                correct: 2
+            },
+            {
+                question: "Qual é o maior felino do mundo?",
+                answers: ["Leão", "Tigre", "Jaguar", "Leopardo"],
+                correct: 1
+            },
+            {
+                question: "Qual animal nunca dorme?",
+                answers: ["Golfinho", "Tubarão", "Baleia", "Nenhum animal"],
+                correct: 3
+            },
+            {
+                question: "Quantos estômagos tem uma vaca?",
+                answers: ["1", "2", "3", "4"],
+                correct: 3
+            },
+            {
+                question: "Qual é o único mamífero capaz de voar?",
+                answers: ["Esquilo-voador", "Morcego", "Pássaro", "Inseto"],
+                correct: 1
+            },
+            {
+                question: "Qual animal vive mais tempo?",
+                answers: ["Elefante", "Tartaruga", "Baleia", "Tubarão"],
+                correct: 1
+            },
+            
+            // Cultura Geral
+            {
+                question: "Quantas cores tem o arco-íris?",
+                answers: ["5", "6", "7", "8"],
+                correct: 2
+            },
+            {
+                question: "Qual é a moeda do Japão?",
+                answers: ["Yuan", "Won", "Yen", "Dong"],
+                correct: 2
+            },
+            {
+                question: "Em que mês começa o outono no Brasil?",
+                answers: ["Março", "Abril", "Maio", "Junho"],
+                correct: 0
+            },
+            {
+                question: "Quantos minutos tem uma hora?",
+                answers: ["50", "60", "70", "80"],
+                correct: 1
+            },
+            {
+                question: "Qual é o idioma mais falado no mundo?",
+                answers: ["Inglês", "Espanhol", "Chinês", "Hindi"],
+                correct: 2
+            },
+            {
+                question: "Quantos dias tem um ano bissexto?",
+                answers: ["365", "366", "367", "364"],
+                correct: 1
+            },
+            {
+                question: "Qual é a religião com mais seguidores no mundo?",
+                answers: ["Islamismo", "Cristianismo", "Hinduísmo", "Budismo"],
+                correct: 1
+            },
+            {
+                question: "Em que continente fica a Antártida?",
+                answers: ["É um continente", "América do Sul", "Oceania", "Não é continente"],
+                correct: 0
+            },
+            {
+                question: "Qual é o metal mais precioso?",
+                answers: ["Ouro", "Prata", "Platina", "Ródio"],
+                correct: 3
+            },
+            {
+                question: "Quantos lados tem um octógono?",
+                answers: ["6", "7", "8", "9"],
+                correct: 2
+            },
+            
+            // Cinema e TV
+            {
+                question: "Qual filme ganhou o Oscar de Melhor Filme em 2020?",
+                answers: ["1917", "Parasita", "Coringa", "Era Uma Vez em Hollywood"],
+                correct: 1
+            },
+            {
+                question: "Quem dirigiu o filme 'Tubarão'?",
+                answers: ["George Lucas", "Steven Spielberg", "Martin Scorsese", "Francis Ford Coppola"],
+                correct: 1
+            },
+            {
+                question: "Qual é o filme de maior bilheteria de todos os tempos?",
+                answers: ["Titanic", "Avatar", "Vingadores: Ultimato", "Star Wars"],
+                correct: 2
+            },
+            {
+                question: "Em que ano foi lançado o primeiro filme de Harry Potter?",
+                answers: ["2000", "2001", "2002", "2003"],
+                correct: 1
+            },
+            {
+                question: "Qual ator interpretou Jack Sparrow?",
+                answers: ["Orlando Bloom", "Johnny Depp", "Brad Pitt", "Leonardo DiCaprio"],
+                correct: 1
+            },
+            {
+                question: "Qual série de TV tem mais episódios?",
+                answers: ["Friends", "The Simpsons", "Supernatural", "Grey's Anatomy"],
+                correct: 1
+            },
+            {
+                question: "Quem criou a série 'Game of Thrones' para TV?",
+                answers: ["George R.R. Martin", "David Benioff", "D.B. Weiss", "Benioff e Weiss"],
+                correct: 3
+            },
+            {
+                question: "Qual filme da Disney foi o primeiro longa-metragem animado?",
+                answers: ["Branca de Neve", "Cinderela", "Bambi", "Pinóquio"],
+                correct: 0
+            },
+            {
+                question: "Quantos filmes tem a saga 'Star Wars' original?",
+                answers: ["3", "6", "9", "12"],
+                correct: 0
+            },
+            {
+                question: "Qual atriz interpretou Hermione em Harry Potter?",
+                answers: ["Emma Stone", "Emma Watson", "Emma Roberts", "Emily Blunt"],
+                correct: 1
+            },
+            
+            // Música
+            {
+                question: "Quantas cordas tem um violão tradicional?",
+                answers: ["4", "5", "6", "7"],
+                correct: 2
+            },
+            {
+                question: "Qual banda lançou a música 'Bohemian Rhapsody'?",
+                answers: ["The Beatles", "Queen", "Led Zeppelin", "Pink Floyd"],
+                correct: 1
+            },
+            {
+                question: "Qual instrumento Chopin tocava principalmente?",
+                answers: ["Violino", "Piano", "Violoncelo", "Flauta"],
+                correct: 1
+            },
+            {
+                question: "Quantas notas musicais existem?",
+                answers: ["5", "6", "7", "8"],
+                correct: 2
+            },
+            {
+                question: "Qual cantor é conhecido como 'Rei do Pop'?",
+                answers: ["Elvis Presley", "Michael Jackson", "Prince", "David Bowie"],
+                correct: 1
+            },
+            {
+                question: "Em que década surgiu o rock and roll?",
+                answers: ["1940", "1950", "1960", "1970"],
+                correct: 1
+            },
+            {
+                question: "Qual é o nome real de Lady Gaga?",
+                answers: ["Stefani Germanotta", "Stefanie Johnson", "Stella Garcia", "Sandra Gomes"],
+                correct: 0
+            },
+            {
+                question: "Quantas sinfonias Beethoven compôs?",
+                answers: ["7", "8", "9", "10"],
+                correct: 2
+            },
+            {
+                question: "Qual banda britânica é conhecida como 'The Fab Four'?",
+                answers: ["The Rolling Stones", "The Beatles", "The Who", "Led Zeppelin"],
+                correct: 1
+            },
+            {
+                question: "Qual gênero musical nasceu em Nova Orleans?",
+                answers: ["Blues", "Jazz", "Rock", "Country"],
+                correct: 1
+            },
+            
+            // Comida e Bebida
+            {
+                question: "Qual é o ingrediente principal do guacamole?",
+                answers: ["Tomate", "Abacate", "Pimentão", "Cebola"],
+                correct: 1
+            },
+            {
+                question: "De onde vem originalmente a pizza?",
+                answers: ["França", "Espanha", "Itália", "Grécia"],
+                correct: 2
+            },
+            {
+                question: "Qual é a bebida mais consumida no mundo depois da água?",
+                answers: ["Café", "Chá", "Refrigerante", "Cerveja"],
+                correct: 1
+            },
+            {
+                question: "Qual fruta tem mais vitamina C?",
+                answers: ["Laranja", "Limão", "Acerola", "Kiwi"],
+                correct: 2
+            },
+            {
+                question: "Qual país é famoso pelo sushi?",
+                answers: ["China", "Coreia", "Japão", "Tailândia"],
+                correct: 2
+            },
+            {
+                question: "Qual é o principal ingrediente do hummus?",
+                answers: ["Lentilha", "Grão-de-bico", "Feijão", "Ervilha"],
+                correct: 1
+            },
+            {
+                question: "Quantas calorias tem aproximadamente 1 grama de gordura?",
+                answers: ["4", "7", "9", "12"],
+                correct: 2
+            },
+            {
+                question: "Qual especiaria é mais cara do mundo?",
+                answers: ["Açafrão", "Cardamomo", "Baunilha", "Canela"],
+                correct: 0
+            },
+            {
+                question: "De que planta vem o chocolate?",
+                answers: ["Café", "Cacau", "Cana", "Coco"],
+                correct: 1
+            },
+            {
+                question: "Qual é o queijo mais consumido no mundo?",
+                answers: ["Cheddar", "Mozzarella", "Parmesão", "Gouda"],
+                correct: 1
+            },
+            
+            // Curiosidades
+            {
+                question: "Qual é o livro mais vendido depois da Bíblia?",
+                answers: ["Dom Quixote", "O Senhor dos Anéis", "Harry Potter", "1984"],
+                correct: 0
+            },
+            {
+                question: "Quantos ossos tem o corpo humano adulto?",
+                answers: ["206", "208", "210", "212"],
+                correct: 0
+            },
+            {
+                question: "Qual é a língua com mais palavras?",
+                answers: ["Português", "Inglês", "Alemão", "Chinês"],
+                correct: 1
+            },
+            {
+                question: "Qual animal dorme em pé?",
+                answers: ["Vaca", "Cavalo", "Girafa", "Todos acima"],
+                correct: 3
+            },
+            {
+                question: "Quantos músculos usamos para sorrir?",
+                answers: ["12", "17", "22", "27"],
+                correct: 1
+            },
+            {
+                question: "Qual é o país com mais vulcões ativos?",
+                answers: ["Japão", "Indonésia", "Islândia", "Chile"],
+                correct: 1
+            },
+            {
+                question: "Quantos dentes tem um adulto?",
+                answers: ["28", "30", "32", "34"],
+                correct: 2
+            },
+            {
+                question: "Qual é o maior órgão do corpo humano?",
+                answers: ["Fígado", "Pulmão", "Pele", "Cérebro"],
+                correct: 2
+            },
+            {
+                question: "Em que ano foi inventado o telefone?",
+                answers: ["1874", "1876", "1878", "1880"],
+                correct: 1
+            },
+            {
+                question: "Qual é a cor que mais relaxa os olhos?",
+                answers: ["Azul", "Verde", "Roxo", "Rosa"],
+                correct: 1
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let correctCount = 0;
+        let timeLeft = 30;
+        let timer;
+        let answered = false;
+
+        function startQuiz() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('quizScreen').style.display = 'block';
+            
+            currentQuestionIndex = 0;
+            score = 0;
+            correctCount = 0;
+            
+            // Embaralhar perguntas e pegar apenas 10
+            shuffleArray(questions);
+            questions.splice(10); // Manter apenas as primeiras 10 perguntas
+            
+            showQuestion();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestionIndex];
+            answered = false;
+            timeLeft = 30;
+            
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('questionNumber').textContent = `Pergunta ${currentQuestionIndex + 1} de 10`;
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('progressFill').style.width = `${((currentQuestionIndex + 1) / 10) * 100}%`;
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            // Criar botões de resposta
+            const answersGrid = document.getElementById('answersGrid');
+            answersGrid.innerHTML = '';
+            
+            // Embaralhar respostas
+            const shuffledAnswers = question.answers.map((answer, index) => ({answer, originalIndex: index}));
+            shuffleArray(shuffledAnswers);
+            
+            shuffledAnswers.forEach((item, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = `${String.fromCharCode(65 + index)}. ${item.answer}`;
+                button.onclick = () => selectAnswer(item.originalIndex, button);
+                answersGrid.appendChild(button);
+            });
+            
+            startTimer();
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timeLeft').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    if (!answered) {
+                        selectAnswer(-1, null); // Resposta incorreta por tempo esgotado
+                    }
+                }
+            }, 1000);
+        }
+
+        function selectAnswer(selectedIndex, buttonElement) {
+            if (answered) return;
+            
+            answered = true;
+            clearInterval(timer);
+            
+            const question = questions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.answer-btn');
+            
+            // Desabilitar todos os botões
+            buttons.forEach(btn => btn.classList.add('disabled'));
+            
+            // Marcar resposta correta e incorreta
+            buttons.forEach((btn, index) => {
+                const originalIndex = getOriginalIndex(btn.textContent, question.answers);
+                if (originalIndex === question.correct) {
+                    btn.classList.add('correct');
+                } else if (btn === buttonElement) {
+                    btn.classList.add('incorrect');
+                }
+            });
+            
+            // Verificar se a resposta está correta
+            if (selectedIndex === question.correct) {
+                score += 10;
+                correctCount++;
+                document.getElementById('currentScore').textContent = score;
+            }
+            
+            // Mostrar botão de próxima pergunta
+            setTimeout(() => {
+                document.getElementById('nextBtn').style.display = 'block';
+            }, 1500);
+        }
+
+        function getOriginalIndex(buttonText, answers) {
+            const answerText = buttonText.substring(3); // Remove "A. ", "B. ", etc.
+            return answers.findIndex(answer => answer === answerText);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex >= 10) {
+                endQuiz();
+            } else {
+                showQuestion();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quizScreen').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'block';
+            
+            const accuracy = Math.round((correctCount / questions.length) * 100);
+            const incorrectCount = questions.length - correctCount;
+            
+            document.getElementById('correctAnswers').textContent = correctCount;
+            document.getElementById('incorrectAnswers').textContent = incorrectCount;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('finalScore').textContent = score;
+            
+            // Definir título e mensagem baseados na performance
+            let title, message;
+            if (accuracy >= 90) {
+                title = "Excelente!";
+                message = "Você é um verdadeiro gênio! Parabéns pelo desempenho excepcional!";
+            } else if (accuracy >= 70) {
+                title = "Muito Bom!";
+                message = "Ótimo conhecimento! Você se saiu muito bem no quiz!";
+            } else if (accuracy >= 50) {
+                title = "Bom Trabalho!";
+                message = "Não foi mal! Continue estudando para melhorar ainda mais!";
+            } else {
+                title = "Continue Tentando!";
+                message = "Não desista! O conhecimento vem com a prática e estudo!";
+            }
+            
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultMessage').textContent = message;
+        }
+
+        function restartQuiz() {
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+            
+            // Reset das variáveis
+            currentQuestionIndex = 0;
+            score = 0;
+            correctCount = 0;
+            document.getElementById('currentScore').textContent = '0';
+        }
+    </script>
+</body>
+</html>
+

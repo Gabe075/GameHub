@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameHub - Biblioteca Digital</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        .content-card {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .content-cover {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .content-info {
+            padding: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .content-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .content-author {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .content-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            max-height: 90px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .content-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .content-meta span i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .content-type-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary-color);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: var(--border-radius-md);
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .content-type-badge.manhwa {
+            background: #e74c3c;
+        }
+
+        .content-type-badge.livro {
+            background: #3498db;
+        }
+
+        .read-button {
+            display: block;
+            width: calc(100% - 3rem);
+            margin: 1.5rem;
+            padding: 0.8rem;
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            border-radius: var(--border-radius-md);
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .read-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .read-button.disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .filters {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.7rem 1.2rem;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            max-width: 400px;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .add-content-info {
+            background: var(--bg-tertiary);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .add-content-info h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .add-content-info p {
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+        }
+
+        .folder-structure {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-md);
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-gamepad"></i>
+                <span>GameHub</span>
+            </div>
+            <nav class="nav">
+                <a href="../index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Início
+                </a>
+                <a href="../index.html#games" class="nav-link">
+                    <i class="fas fa-dice-d6"></i> Jogos
+                </a>
+                <a href="#" class="nav-link active">
+                    <i class="fas fa-book"></i> Biblioteca
+                </a>
+                <a href="../sobre.html" class="nav-link">
+                    <i class="fas fa-info-circle"></i> Sobre
+                </a>
+                <a href="../contato.html" class="nav-link">
+                    <i class="fas fa-envelope"></i> Contato
+                </a>
+            </nav>
+            <div class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="../index.html" class="mobile-nav-link">
+            <i class="fas fa-home"></i> Início
+        </a>
+        <a href="../index.html#games" class="mobile-nav-link">
+            <i class="fas fa-dice-d6"></i> Jogos
+        </a>
+        <a href="#" class="mobile-nav-link active">
+            <i class="fas fa-book"></i> Biblioteca
+        </a>
+        <a href="../sobre.html" class="mobile-nav-link">
+            <i class="fas fa-info-circle"></i> Sobre
+        </a>
+        <a href="../contato.html" class="mobile-nav-link">
+            <i class="fas fa-envelope"></i> Contato
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <section id="biblioteca" class="section active">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Biblioteca Digital</h2>
+                    <p class="section-subtitle">Explore livros e manhwas incríveis! Adicione seu próprio conteúdo seguindo as instruções abaixo.</p>
+                </div>
+
+                <div class="add-content-info">
+                    <h3><i class="fas fa-plus-circle"></i> Como Adicionar Conteúdo</h3>
+                    <p>Para adicionar livros ou manhwas, crie pastas organizadas seguindo esta estrutura:</p>
+                    <div class="folder-structure">
+Livros/<br>
+├── livros/<br>
+│   ├── meu-primeiro-livro/<br>
+│   │   ├── index.html<br>
+│   │   ├── capa.jpg<br>
+│   │   └── capitulos/<br>
+│   └── outro-livro/<br>
+└── manhwas/<br>
+    ├── meu-primeiro-manhwa/<br>
+    │   ├── index.html<br>
+    │   ├── capa.jpg<br>
+    │   └── capitulos/<br>
+    └── outro-manhwa/
+                    </div>
+                    <p><strong>Dica:</strong> Use o arquivo "COMO_ADICIONAR_LIVROS.md" como referência para criar seu conteúdo!</p>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="contentSearch" placeholder="Buscar livros e manhwas...">
+                </div>
+
+                <div class="filters">
+                    <button class="filter-btn active" data-category="all">
+                        <i class="fas fa-th"></i> Todos
+                    </button>
+                    <button class="filter-btn" data-category="livro">
+                        <i class="fas fa-book"></i> Livros
+                    </button>
+                    <button class="filter-btn" data-category="manhwa">
+                        <i class="fas fa-scroll"></i> Manhwas
+                    </button>
+                    <button class="filter-btn" data-category="fantasia">
+                        <i class="fas fa-dragon"></i> Fantasia
+                    </button>
+                    <button class="filter-btn" data-category="aventura">
+                        <i class="fas fa-map-marked-alt"></i> Aventura
+                    </button>
+                    <button class="filter-btn" data-category="romance">
+                        <i class="fas fa-heart"></i> Romance
+                    </button>
+                    <button class="filter-btn" data-category="acao">
+                        <i class="fas fa-fist-raised"></i> Ação
+                    </button>
+                </div>
+
+                <div class="content-grid" id="contentGrid">
+                    <!-- Conteúdo será carregado dinamicamente aqui -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-gamepad"></i> GameHub</h3>
+                    <p>Sua plataforma completa de entretenimento digital</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links Rápidos</h4>
+                    <ul>
+                        <li><a href="../index.html">Início</a></li>
+                        <li><a href="../index.html#games">Jogos</a></li>
+                        <li><a href="#">Biblioteca</a></li>
+                        <li><a href="../sobre.html">Sobre</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Estatísticas</h4>
+                    <ul>
+                        <li><span id="footerGames">0</span> Jogos</li>
+                        <li><span id="footerBooks">0</span> Livros</li>
+                        <li><span id="footerManhwas">0</span> Manhwas</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 GameHub. Desenvolvido com ❤️ para diversão e aprendizado.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Dados de exemplo para demonstração
+        const contentData = [];
+
+        let currentFilter = 'all';
+        let currentSearchTerm = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadContent();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.querySelectorAll('.filter-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    currentFilter = button.dataset.category;
+                    updateActiveFilter(button);
+                    populateContentGrid();
+                });
+            });
+
+            document.getElementById('contentSearch').addEventListener('input', (event) => {
+                currentSearchTerm = event.target.value.toLowerCase();
+                populateContentGrid();
+            });
+        }
+
+        async function loadContent() {
+            try {
+                // Tentar carregar livros
+                await loadBooksFromFolder('livros');
+                // Tentar carregar manhwas
+                await loadBooksFromFolder('manhwas');
+            } catch (error) {
+                console.log('Nenhum conteúdo encontrado ainda. Adicione seguindo as instruções!');
+            }
+            populateContentGrid();
+        }
+
+        async function loadBooksFromFolder(type) {
+            // Esta função seria implementada para escanear as pastas reais
+            // Por enquanto, vamos deixar vazia para que o usuário adicione conteúdo
+            return [];
+        }
+
+        function populateContentGrid() {
+            const contentGrid = document.getElementById('contentGrid');
+            contentGrid.innerHTML = '';
+
+            const filteredContent = contentData.filter(content => {
+                const matchesCategory = currentFilter === 'all' || 
+                                      content.type === currentFilter || 
+                                      content.genre === currentFilter;
+                const matchesSearch = content.title.toLowerCase().includes(currentSearchTerm) ||
+                                    content.author.toLowerCase().includes(currentSearchTerm) ||
+                                    content.description.toLowerCase().includes(currentSearchTerm);
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filteredContent.length === 0) {
+                contentGrid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; color: var(--text-muted);">
+                        <i class="fas fa-book-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        <h3>Nenhum conteúdo encontrado</h3>
+                        <p>Adicione livros e manhwas seguindo as instruções acima!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredContent.forEach(content => {
+                const contentCard = createContentCard(content);
+                contentGrid.appendChild(contentCard);
+            });
+        }
+
+        function createContentCard(content) {
+            const card = document.createElement('div');
+            card.className = 'content-card';
+            
+            const readLink = content.folder ? `${content.type}s/${content.folder}/index.html` : '#';
+            const readText = content.folder ? (content.type === 'livro' ? 'Ler Livro' : 'Ler Manhwa') : 'Em Breve';
+            const buttonClass = content.folder ? '' : ' disabled';
+            
+            card.innerHTML = `
+                <div class="content-type-badge ${content.type}">${content.type.toUpperCase()}</div>
+                <img src="${content.cover}" alt="Capa" class="content-cover">
+                <div class="content-info">
+                    <h3 class="content-title">${content.title}</h3>
+                    <p class="content-author">${content.author}</p>
+                    <p class="content-description">${content.description}</p>
+                    <div class="content-meta">
+                        <span><i class="fas fa-book-open"></i> ${content.chapters} Cap.</span>
+                        <span><i class="fas fa-tag"></i> ${content.genre}</span>
+                        <span><i class="fas fa-star"></i> ${content.rating}/5</span>
+                    </div>
+                </div>
+                <a href="${readLink}" class="read-button${buttonClass}">${readText}</a>
+            `;
+            
+            if (!content.folder) {
+                card.querySelector('.read-button').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    alert('Este conteúdo ainda não está disponível. Adicione seguindo as instruções!');
+                });
+            }
+            
+            return card;
+        }
+
+        function updateActiveFilter(activeButton) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            activeButton.classList.add('active');
+        }
+
+        // Funções para o menu mobile
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        let mobileMenuOpen = false;
+
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        }
+
+        function toggleMobileMenu() {
+            mobileMenuOpen = !mobileMenuOpen;
+            mobileMenu.classList.toggle('active', mobileMenuOpen);
+            const icon = mobileMenuToggle.querySelector('i');
+            icon.className = mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars';
+        }
+
+        function closeMobileMenu() {
+            mobileMenuOpen = false;
+            mobileMenu.classList.remove('active');
+            const icon = mobileMenuToggle.querySelector('i');
+            icon.className = 'fas fa-bars';
+        }
+
+        // Fechar menu mobile ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (mobileMenuOpen && 
+                !mobileMenu.contains(e.target) && 
+                !mobileMenuToggle.contains(e.target)) {
+                closeMobileMenu();
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Reflexos - GameHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../common.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            padding: 1rem;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .game-area {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .instruction {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        .reaction-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            user-select: none;
+        }
+
+        .reaction-circle.waiting {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            animation: pulse 2s infinite;
+        }
+
+        .reaction-circle.ready {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            animation: none;
+        }
+
+        .reaction-circle.too-early {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .result-display {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-top: 1rem;
+            min-height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-display.good {
+            color: #4CAF50;
+        }
+
+        .result-display.average {
+            color: #FFC107;
+        }
+
+        .result-display.slow {
+            color: #ff6b6b;
+        }
+
+        .start-screen, .results-screen {
+            text-align: center;
+        }
+
+        .start-screen h2, .results-screen h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #FFD700;
+        }
+
+        .start-screen p, .results-screen p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+        }
+
+        .score-breakdown {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 1.5rem 0;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .final-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin-top: 1rem;
+        }
+
+        .attempts-list {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .attempt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin-bottom: 0.3rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 1.5rem;
+                margin: 0.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .reaction-circle {
+                width: 150px;
+                height: 150px;
+                font-size: 1.2rem;
+            }
+
+            .stats {
+                padding: 0.8rem;
+            }
+
+            .game-area {
+                padding: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .reaction-circle {
+                width: 120px;
+                height: 120px;
+                font-size: 1rem;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stat-item {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .game-area {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.location.href='../../index.html'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="game-container">
+        <!-- Tela Inicial -->
+        <div class="start-screen" id="startScreen">
+            <h1>
+                <i class="fas fa-stopwatch"></i>
+                Jogo de Reflexos
+            </h1>
+            <h2>Teste sua velocidade!</h2>
+            <p>Clique no círculo assim que ele ficar verde. Teste seus reflexos e veja quão rápido você consegue reagir!</p>
+            
+            <button class="btn" onclick="startGame()">
+                <i class="fas fa-play"></i>
+                Começar Teste
+            </button>
+        </div>
+
+        <!-- Tela do Jogo -->
+        <div class="game-screen" id="gameScreen" style="display: none;">
+            <h1>
+                <i class="fas fa-stopwatch"></i>
+                Jogo de Reflexos
+            </h1>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">Tentativa</div>
+                    <div class="stat-value" id="currentAttempt">1</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Melhor Tempo</div>
+                    <div class="stat-value" id="bestTime">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Média</div>
+                    <div class="stat-value" id="averageTime">-</div>
+                </div>
+            </div>
+
+            <div class="game-area">
+                <div class="instruction" id="instruction">Aguarde o círculo ficar verde, então clique!</div>
+                <div class="reaction-circle waiting" id="reactionCircle" onclick="handleClick()">
+                    Aguarde...
+                </div>
+                <div class="result-display" id="resultDisplay"></div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="resetGame()" id="resetBtn" style="display: none;">
+                <i class="fas fa-redo"></i>
+                Tentar Novamente
+            </button>
+        </div>
+
+        <!-- Tela de Resultados -->
+        <div class="results-screen" id="resultsScreen" style="display: none;">
+            <h1>
+                <i class="fas fa-trophy"></i>
+                Resultados
+            </h1>
+            <h2 id="resultTitle">Teste Completo!</h2>
+            <p id="resultMessage">Aqui estão seus resultados de reflexo!</p>
+            
+            <div class="score-breakdown">
+                <div class="score-item">
+                    <span>Melhor Tempo:</span>
+                    <span id="finalBestTime">-</span>
+                </div>
+                <div class="score-item">
+                    <span>Tempo Médio:</span>
+                    <span id="finalAverageTime">-</span>
+                </div>
+                <div class="score-item">
+                    <span>Tentativas Válidas:</span>
+                    <span id="validAttempts">0</span>
+                </div>
+                <div class="score-item">
+                    <span>Classificação:</span>
+                    <span id="classification">-</span>
+                </div>
+            </div>
+
+            <div class="attempts-list" id="attemptsList">
+                <h4>Histórico de Tentativas:</h4>
+                <!-- Lista de tentativas será inserida aqui -->
+            </div>
+
+            <button class="btn" onclick="restartGame()">
+                <i class="fas fa-redo"></i>
+                Testar Novamente
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='../../index.html'">
+                <i class="fas fa-home"></i>
+                Menu Principal
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Estado do jogo
+        let gameState = {
+            currentAttempt: 1,
+            maxAttempts: 5,
+            attempts: [],
+            bestTime: null,
+            averageTime: null,
+            gameActive: false,
+            waitingForGreen: false,
+            startTime: null,
+            timeout: null
+        };
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            
+            // Reset game state
+            gameState.currentAttempt = 1;
+            gameState.attempts = [];
+            gameState.bestTime = null;
+            gameState.averageTime = null;
+            gameState.gameActive = true;
+            
+            updateStats();
+            startNewAttempt();
+        }
+
+        function startNewAttempt() {
+            if (gameState.currentAttempt > gameState.maxAttempts) {
+                endGame();
+                return;
+            }
+
+            const circle = document.getElementById('reactionCircle');
+            const instruction = document.getElementById('instruction');
+            const resultDisplay = document.getElementById('resultDisplay');
+            
+            // Reset visual state
+            circle.className = 'reaction-circle waiting';
+            circle.textContent = 'Aguarde...';
+            instruction.textContent = 'Aguarde o círculo ficar verde, então clique!';
+            resultDisplay.textContent = '';
+            resultDisplay.className = 'result-display';
+            
+            gameState.waitingForGreen = true;
+            gameState.startTime = null;
+            
+            // Random delay between 2-6 seconds
+            const delay = Math.random() * 4000 + 2000;
+            
+            gameState.timeout = setTimeout(() => {
+                if (gameState.gameActive && gameState.waitingForGreen) {
+                    circle.className = 'reaction-circle ready';
+                    circle.textContent = 'CLIQUE!';
+                    instruction.textContent = 'CLIQUE AGORA!';
+                    gameState.startTime = Date.now();
+                    gameState.waitingForGreen = false;
+                }
+            }, delay);
+        }
+
+        function handleClick() {
+            if (!gameState.gameActive) return;
+
+            const circle = document.getElementById('reactionCircle');
+            const instruction = document.getElementById('instruction');
+            const resultDisplay = document.getElementById('resultDisplay');
+
+            if (gameState.waitingForGreen) {
+                // Clicked too early
+                clearTimeout(gameState.timeout);
+                circle.className = 'reaction-circle too-early';
+                circle.textContent = 'Muito cedo!';
+                instruction.textContent = 'Você clicou muito cedo! Aguarde o verde.';
+                resultDisplay.textContent = 'Tentativa inválida';
+                resultDisplay.className = 'result-display slow';
+                
+                gameState.attempts.push({
+                    attempt: gameState.currentAttempt,
+                    time: null,
+                    valid: false,
+                    message: 'Muito cedo'
+                });
+                
+                setTimeout(() => {
+                    gameState.currentAttempt++;
+                    updateStats();
+                    startNewAttempt();
+                }, 2000);
+                
+            } else if (gameState.startTime) {
+                // Valid click
+                const reactionTime = Date.now() - gameState.startTime;
+                
+                gameState.attempts.push({
+                    attempt: gameState.currentAttempt,
+                    time: reactionTime,
+                    valid: true,
+                    message: `${reactionTime}ms`
+                });
+                
+                // Update best time
+                if (!gameState.bestTime || reactionTime < gameState.bestTime) {
+                    gameState.bestTime = reactionTime;
+                }
+                
+                // Calculate average
+                const validAttempts = gameState.attempts.filter(a => a.valid);
+                if (validAttempts.length > 0) {
+                    gameState.averageTime = Math.round(
+                        validAttempts.reduce((sum, a) => sum + a.time, 0) / validAttempts.length
+                    );
+                }
+                
+                // Display result
+                resultDisplay.textContent = `${reactionTime}ms`;
+                
+                if (reactionTime < 200) {
+                    resultDisplay.className = 'result-display good';
+                    instruction.textContent = 'Excelente reflexo!';
+                } else if (reactionTime < 300) {
+                    resultDisplay.className = 'result-display good';
+                    instruction.textContent = 'Muito bom!';
+                } else if (reactionTime < 400) {
+                    resultDisplay.className = 'result-display average';
+                    instruction.textContent = 'Bom reflexo!';
+                } else {
+                    resultDisplay.className = 'result-display slow';
+                    instruction.textContent = 'Pode melhorar!';
+                }
+                
+                circle.textContent = `${reactionTime}ms`;
+                gameState.startTime = null;
+                
+                setTimeout(() => {
+                    gameState.currentAttempt++;
+                    updateStats();
+                    startNewAttempt();
+                }, 2000);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('currentAttempt').textContent = `${gameState.currentAttempt}/${gameState.maxAttempts}`;
+            document.getElementById('bestTime').textContent = gameState.bestTime ? `${gameState.bestTime}ms` : '-';
+            document.getElementById('averageTime').textContent = gameState.averageTime ? `${gameState.averageTime}ms` : '-';
+        }
+
+        function resetGame() {
+            clearTimeout(gameState.timeout);
+            gameState.currentAttempt = 1;
+            gameState.attempts = [];
+            gameState.bestTime = null;
+            gameState.averageTime = null;
+            updateStats();
+            startNewAttempt();
+            document.getElementById('resetBtn').style.display = 'none';
+        }
+
+        function endGame() {
+            gameState.gameActive = false;
+            clearTimeout(gameState.timeout);
+            
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'block';
+            
+            const validAttempts = gameState.attempts.filter(a => a.valid);
+            
+            document.getElementById('finalBestTime').textContent = gameState.bestTime ? `${gameState.bestTime}ms` : 'Nenhum';
+            document.getElementById('finalAverageTime').textContent = gameState.averageTime ? `${gameState.averageTime}ms` : 'Nenhum';
+            document.getElementById('validAttempts').textContent = `${validAttempts.length}/${gameState.maxAttempts}`;
+            
+            // Classification
+            let classification = 'Iniciante';
+            if (gameState.averageTime) {
+                if (gameState.averageTime < 200) {
+                    classification = 'Ninja';
+                } else if (gameState.averageTime < 250) {
+                    classification = 'Excelente';
+                } else if (gameState.averageTime < 300) {
+                    classification = 'Muito Bom';
+                } else if (gameState.averageTime < 400) {
+                    classification = 'Bom';
+                } else {
+                    classification = 'Pode Melhorar';
+                }
+            }
+            
+            document.getElementById('classification').textContent = classification;
+            
+            // Generate attempts list
+            const attemptsList = document.getElementById('attemptsList');
+            let listHTML = '<h4>Histórico de Tentativas:</h4>';
+            
+            gameState.attempts.forEach(attempt => {
+                listHTML += `
+                    <div class="attempt-item">
+                        <span>Tentativa ${attempt.attempt}</span>
+                        <span>${attempt.message}</span>
+                    </div>
+                `;
+            });
+            
+            attemptsList.innerHTML = listHTML;
+            
+            // Result message
+            let title, message;
+            if (classification === 'Ninja') {
+                title = 'Incrível!';
+                message = 'Você tem reflexos de ninja!';
+            } else if (classification === 'Excelente') {
+                title = 'Excelente!';
+                message = 'Seus reflexos são impressionantes!';
+            } else if (classification === 'Muito Bom') {
+                title = 'Muito Bom!';
+                message = 'Você tem reflexos acima da média!';
+            } else if (classification === 'Bom') {
+                title = 'Bom Trabalho!';
+                message = 'Seus reflexos estão na média!';
+            } else {
+                title = 'Continue Praticando!';
+                message = 'Com treino, seus reflexos vão melhorar!';
+            }
+            
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultMessage').textContent = message;
+        }
+
+        function restartGame() {
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+        }
+
+        // Prevent accidental clicks during page load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                gameState.gameActive = false;
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+
