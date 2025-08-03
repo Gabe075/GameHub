@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Conhecimentos - GameHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../common.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            padding: 1rem;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+            z-index: 100;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .quiz-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .question-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .question-number {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .answer-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-align: left;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .answer-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .answer-btn.correct {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: #4CAF50;
+            animation: correctAnswer 0.6s ease;
+        }
+
+        .answer-btn.incorrect {
+            background: rgba(244, 67, 54, 0.8);
+            border-color: #f44336;
+            animation: incorrectAnswer 0.6s ease;
+        }
+
+        .answer-btn.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        @keyframes correctAnswer {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes incorrectAnswer {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+            100% { transform: translateX(0); }
+        }
+
+        .next-btn {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: none;
+            margin: 1rem auto;
+        }
+
+        .next-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .start-screen, .results-screen {
+            text-align: center;
+        }
+
+        .start-screen h2, .results-screen h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #FFD700;
+        }
+
+        .start-screen p, .results-screen p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #74b9ff, #0984e3);
+        }
+
+        .score-breakdown {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin: 1.5rem 0;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .final-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFD700;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .quiz-container {
+                padding: 1.5rem;
+                margin: 0.5rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .quiz-stats {
+                padding: 0.8rem;
+            }
+
+            .question-container {
+                padding: 1.5rem;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+            }
+
+            .answer-btn {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quiz-container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .quiz-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stat-item {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-btn" onclick="window.location.href='../../index.html'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="quiz-container">
+        <!-- Tela Inicial -->
+        <div class="start-screen" id="startScreen">
+            <h1>
+                <i class="fas fa-question-circle"></i>
+                Quiz de Conhecimentos
+            </h1>
+            <h2>Teste seus conhecimentos!</h2>
+            <p>Responda 10 perguntas sobre diversos temas e descubra o quanto você sabe. Cada pergunta vale 10 pontos!</p>
+            <button class="btn" onclick="startQuiz()">
+                <i class="fas fa-play"></i>
+                Começar Quiz
+            </button>
+        </div>
+
+        <!-- Tela do Quiz -->
+        <div class="quiz-screen" id="quizScreen" style="display: none;">
+            <h1>
+                <i class="fas fa-question-circle"></i>
+                Quiz de Conhecimentos
+            </h1>
+            
+            <div class="quiz-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Pergunta</div>
+                    <div class="stat-value" id="currentQuestion">1</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Pontuação</div>
+                    <div class="stat-value" id="currentScore">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Tempo</div>
+                    <div class="stat-value" id="timeLeft">30</div>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 10%"></div>
+            </div>
+
+            <div class="question-container">
+                <div class="question-number" id="questionNumber">Pergunta 1 de 10</div>
+                <div class="question-text" id="questionText">Carregando pergunta...</div>
+                <div class="answers-grid" id="answersGrid">
+                    <!-- Respostas serão inseridas aqui -->
+                </div>
+            </div>
+
+            <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
+                <i class="fas fa-arrow-right"></i>
+                Próxima Pergunta
+            </button>
+        </div>
+
+        <!-- Tela de Resultados -->
+        <div class="results-screen" id="resultsScreen" style="display: none;">
+            <h1>
+                <i class="fas fa-trophy"></i>
+                Resultados
+            </h1>
+            <h2 id="resultTitle">Parabéns!</h2>
+            <p id="resultMessage">Você completou o quiz!</p>
+            
+            <div class="score-breakdown">
+                <div class="score-item">
+                    <span>Respostas Corretas:</span>
+                    <span id="correctAnswers">0</span>
+                </div>
+                <div class="score-item">
+                    <span>Respostas Incorretas:</span>
+                    <span id="incorrectAnswers">0</span>
+                </div>
+                <div class="score-item">
+                    <span>Precisão:</span>
+                    <span id="accuracy">0%</span>
+                </div>
+                <div class="final-score">
+                    Pontuação Final: <span id="finalScore">0</span>
+                </div>
+            </div>
+
+            <button class="btn" onclick="restartQuiz()">
+                <i class="fas fa-redo"></i>
+                Jogar Novamente
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='../../index.html'">
+                <i class="fas fa-home"></i>
+                Menu Principal
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Qual é a capital do Brasil?",
+                answers: ["São Paulo", "Rio de Janeiro", "Brasília", "Belo Horizonte"],
+                correct: 2
+            },
+            {
+                question: "Quem pintou a obra 'Mona Lisa'?",
+                answers: ["Vincent van Gogh", "Leonardo da Vinci", "Pablo Picasso", "Michelangelo"],
+                correct: 1
+            },
+            {
+                question: "Qual é o maior planeta do sistema solar?",
+                answers: ["Terra", "Saturno", "Netuno", "Júpiter"],
+                correct: 3
+            },
+            {
+                question: "Em que ano o homem pisou na Lua pela primeira vez?",
+                answers: ["1967", "1969", "1971", "1973"],
+                correct: 1
+            },
+            {
+                question: "Qual é o elemento químico representado pelo símbolo 'O'?",
+                answers: ["Ouro", "Oxigênio", "Ósmio", "Ozônio"],
+                correct: 1
+            },
+            {
+                question: "Quem escreveu 'Dom Casmurro'?",
+                answers: ["José de Alencar", "Machado de Assis", "Clarice Lispector", "Guimarães Rosa"],
+                correct: 1
+            },
+            {
+                question: "Qual é a fórmula química da água?",
+                answers: ["H2O", "CO2", "NaCl", "CH4"],
+                correct: 0
+            },
+            {
+                question: "Em que continente fica o Egito?",
+                answers: ["Ásia", "Europa", "África", "América"],
+                correct: 2
+            },
+            {
+                question: "Quantos lados tem um hexágono?",
+                answers: ["5", "6", "7", "8"],
+                correct: 1
+            },
+            {
+                question: "Qual é a velocidade da luz no vácuo?",
+                answers: ["300.000 km/s", "150.000 km/s", "450.000 km/s", "600.000 km/s"],
+                correct: 0
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let correctCount = 0;
+        let timeLeft = 30;
+        let timer;
+        let answered = false;
+
+        function startQuiz() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('quizScreen').style.display = 'block';
+            
+            currentQuestionIndex = 0;
+            score = 0;
+            correctCount = 0;
+            
+            // Embaralhar perguntas
+            shuffleArray(questions);
+            
+            showQuestion();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestionIndex];
+            answered = false;
+            timeLeft = 30;
+            
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('questionNumber').textContent = `Pergunta ${currentQuestionIndex + 1} de ${questions.length}`;
+            document.getElementById('questionText').textContent = question.question;
+            document.getElementById('progressFill').style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            // Criar botões de resposta
+            const answersGrid = document.getElementById('answersGrid');
+            answersGrid.innerHTML = '';
+            
+            // Embaralhar respostas
+            const shuffledAnswers = question.answers.map((answer, index) => ({answer, originalIndex: index}));
+            shuffleArray(shuffledAnswers);
+            
+            shuffledAnswers.forEach((item, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = `${String.fromCharCode(65 + index)}. ${item.answer}`;
+                button.onclick = () => selectAnswer(item.originalIndex, button);
+                answersGrid.appendChild(button);
+            });
+            
+            startTimer();
+        }
+
+        function startTimer() {
+            timer = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timeLeft').textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    if (!answered) {
+                        selectAnswer(-1, null); // Resposta incorreta por tempo esgotado
+                    }
+                }
+            }, 1000);
+        }
+
+        function selectAnswer(selectedIndex, buttonElement) {
+            if (answered) return;
+            
+            answered = true;
+            clearInterval(timer);
+            
+            const question = questions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.answer-btn');
+            
+            // Desabilitar todos os botões
+            buttons.forEach(btn => btn.classList.add('disabled'));
+            
+            // Marcar resposta correta e incorreta
+            buttons.forEach((btn, index) => {
+                const originalIndex = getOriginalIndex(btn.textContent, question.answers);
+                if (originalIndex === question.correct) {
+                    btn.classList.add('correct');
+                } else if (btn === buttonElement) {
+                    btn.classList.add('incorrect');
+                }
+            });
+            
+            // Verificar se a resposta está correta
+            if (selectedIndex === question.correct) {
+                score += 10;
+                correctCount++;
+                document.getElementById('currentScore').textContent = score;
+            }
+            
+            // Mostrar botão de próxima pergunta
+            setTimeout(() => {
+                document.getElementById('nextBtn').style.display = 'block';
+            }, 1500);
+        }
+
+        function getOriginalIndex(buttonText, answers) {
+            const answerText = buttonText.substring(3); // Remove "A. ", "B. ", etc.
+            return answers.findIndex(answer => answer === answerText);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('quizScreen').style.display = 'none';
+            document.getElementById('resultsScreen').style.display = 'block';
+            
+            const accuracy = Math.round((correctCount / questions.length) * 100);
+            const incorrectCount = questions.length - correctCount;
+            
+            document.getElementById('correctAnswers').textContent = correctCount;
+            document.getElementById('incorrectAnswers').textContent = incorrectCount;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('finalScore').textContent = score;
+            
+            // Definir título e mensagem baseados na performance
+            let title, message;
+            if (accuracy >= 90) {
+                title = "Excelente!";
+                message = "Você é um verdadeiro gênio! Parabéns pelo desempenho excepcional!";
+            } else if (accuracy >= 70) {
+                title = "Muito Bom!";
+                message = "Ótimo conhecimento! Você se saiu muito bem no quiz!";
+            } else if (accuracy >= 50) {
+                title = "Bom Trabalho!";
+                message = "Não foi mal! Continue estudando para melhorar ainda mais!";
+            } else {
+                title = "Continue Tentando!";
+                message = "Não desista! O conhecimento vem com a prática e estudo!";
+            }
+            
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultMessage').textContent = message;
+        }
+
+        function restartQuiz() {
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+            
+            // Reset das variáveis
+            currentQuestionIndex = 0;
+            score = 0;
+            correctCount = 0;
+            document.getElementById('currentScore').textContent = '0';
+        }
+    </script>
+</body>
+</html>
+

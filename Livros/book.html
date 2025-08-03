@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameHub - Leitor de Livros</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .reader-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .book-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .book-title {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .book-author {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .chapter-info {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .chapter-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .nav-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .nav-button:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .chapter-selector {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .chapter-selector select {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius-md);
+            font-size: 1rem;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .chapter-content {
+            line-height: 1.8;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            text-align: justify;
+            margin-bottom: 2rem;
+        }
+
+        .chapter-content h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .chapter-content p {
+            margin-bottom: 1.5rem;
+            text-indent: 2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .back-button {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.8rem 1.5rem;
+            border-radius: var(--border-radius-md);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .back-button:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .reader-container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+
+            .chapter-navigation {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-button {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .chapter-selector {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-gamepad"></i>
+                <span>GameHub</span>
+            </div>
+            <nav class="nav">
+                <a href="../index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Início
+                </a>
+                <a href="../index.html#games" class="nav-link">
+                    <i class="fas fa-dice-d6"></i> Jogos
+                </a>
+                <a href="index.html" class="nav-link active">
+                    <i class="fas fa-book"></i> Livros
+                </a>
+                <a href="../sobre.html" class="nav-link">
+                    <i class="fas fa-info-circle"></i> Sobre
+                </a>
+                <a href="../contato.html" class="nav-link">
+                    <i class="fas fa-envelope"></i> Contato
+                </a>
+            </nav>
+            <div class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="../index.html" class="mobile-nav-link">
+            <i class="fas fa-home"></i> Início
+        </a>
+        <a href="../index.html#games" class="mobile-nav-link">
+            <i class="fas fa-dice-d6"></i> Jogos
+        </a>
+        <a href="index.html" class="mobile-nav-link active">
+            <i class="fas fa-book"></i> Livros
+        </a>
+        <a href="../sobre.html" class="mobile-nav-link">
+            <i class="fas fa-info-circle"></i> Sobre
+        </a>
+        <a href="../contato.html" class="mobile-nav-link">
+            <i class="fas fa-envelope"></i> Contato
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <section class="section active">
+            <div class="container">
+                <a href="index.html" class="back-button">
+                    <i class="fas fa-arrow-left"></i> Voltar à Biblioteca
+                </a>
+
+                <div class="reader-container">
+                    <div class="book-header">
+                        <h1 class="book-title" id="bookTitle">Carregando...</h1>
+                        <p class="book-author" id="bookAuthor">Carregando...</p>
+                        <p class="chapter-info" id="chapterInfo">Capítulo 1 de 1</p>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0% concluído</div>
+
+                    <div class="chapter-navigation">
+                        <button class="nav-button" id="prevButton" onclick="previousChapter()">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </button>
+                        
+                        <div class="chapter-selector">
+                            <select id="chapterSelect" onchange="goToChapter(this.value)">
+                                <!-- Opções serão preenchidas dinamicamente -->
+                            </select>
+                        </div>
+                        
+                        <button class="nav-button" id="nextButton" onclick="nextChapter()">
+                            Próximo <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="chapter-content" id="chapterContent">
+                        <p>Carregando conteúdo do capítulo...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Dados de exemplo dos livros
+        const booksData = {
+            "harry-potter-pedra-filosofal": {
+                title: "Harry Potter e a Pedra Filosofal",
+                author: "J.K. Rowling",
+                chapters: [
+                    {
+                        title: "O Menino que Sobreviveu",
+                        content: `
+                            <h3>Capítulo 1: O Menino que Sobreviveu</h3>
+                            <p>O Sr. e a Sra. Dursley, do número quatro da Rua dos Alfeneiros, tinham o orgulho de dizer que eram perfeitamente normais, muito obrigado. Eram as últimas pessoas no mundo que se esperaria que estivessem envolvidas em qualquer coisa estranha ou misteriosa, porque simplesmente não tinham paciência para essas bobagens.</p>
+                            <p>O Sr. Dursley era diretor de uma empresa chamada Grunnings, que fazia brocas. Era um homem corpulento e rechonchudo, quase sem pescoço, embora tivesse um bigode imenso. A Sra. Dursley era magra e loira e tinha quase o dobro do pescoço normal, o que era muito útil, pois ela passava a maior parte do tempo esticando-o por cima da cerca do jardim, espiando os vizinhos.</p>
+                            <p>Os Dursley tinham um filho pequeno chamado Dudley e, na opinião deles, não havia menino melhor em lugar nenhum.</p>
+                            <p>Os Dursley tinham tudo o que queriam, mas também tinham um segredo, e o maior medo deles era que alguém o descobrisse. Eles achavam que não conseguiriam suportar se alguém descobrisse sobre os Potter. A Sra. Potter era irmã da Sra. Dursley, mas elas não se viam há vários anos; na verdade, a Sra. Dursley fingia que não tinha irmã, porque a irmã e o marido inútil dela eram o mais diferente possível dos Dursley.</p>
+                        `
+                    },
+                    {
+                        title: "O Vidro que Sumiu",
+                        content: `
+                            <h3>Capítulo 2: O Vidro que Sumiu</h3>
+                            <p>Quase dez anos se passaram desde que os Dursley acordaram e encontraram o sobrinho na soleira da porta, mas a Rua dos Alfeneiros mal havia mudado. O sol nascia nos mesmos jardins arrumados e iluminava a placa de bronze com o número quatro na porta dos Dursley; subia pela sala de estar, que era quase exatamente a mesma de quando o Sr. Dursley ouvira as notícias fatídicas sobre as corujas, dez anos antes.</p>
+                            <p>Só as fotografias na lareira realmente mostravam quanto tempo havia passado. Dez anos atrás, havia muitas fotos do que parecia uma grande bola de praia rosa usando bonés de cores diferentes — mas Dudley Dursley não era mais um bebê, e agora as fotos mostravam um menino grande e loiro montado na primeira bicicleta, numa gangorra no parque, jogando no computador com o pai, sendo abraçado e beijado pela mãe.</p>
+                            <p>O quarto não mostrava sinais de que ali morava outro menino.</p>
+                            <p>No entanto, Harry Potter ainda estava lá, dormindo naquele momento, mas não por muito tempo. A tia Petúnia estava acordada e foi a voz estridente dela que fez o primeiro barulho do dia.</p>
+                        `
+                    }
+                ]
+            },
+            "o-hobbit": {
+                title: "O Hobbit",
+                author: "J.R.R. Tolkien",
+                chapters: [
+                    {
+                        title: "Uma Festa Inesperada",
+                        content: `
+                            <h3>Capítulo 1: Uma Festa Inesperada</h3>
+                            <p>Numa toca no chão vivia um hobbit. Não uma toca desagradável, suja e úmida, cheia de pontas de minhocas e com cheiro de lodo, nem tampouco uma toca seca, vazia e arenosa, sem nada em que se sentar ou que comer: era uma toca-hobbit, e isso significa conforto.</p>
+                            <p>Tinha uma porta redonda, perfeitamente redonda, como uma vigília, pintada de verde, com uma maçaneta de bronze bem amarela bem no meio. A porta se abria para um vestíbulo em forma de tubo, como um túnel: um túnel muito confortável, sem fumaça, com paredes apaineladas, chão ladrilhado e acarpetado, mobiliado com cadeiras envernizadas, e lotes e lotes de cabides para chapéus e casacos — o hobbit gostava de visitas.</p>
+                            <p>O túnel serpenteava, seguindo adiante, indo dar numa espécie de vestíbulo no coração da colina; e nesse vestíbulo havia quartos: quartos de dormir, banheiros, adegas, despensas (lotes delas), guarda-roupas (ele tinha quartos inteiros dedicados só a roupas), cozinhas, salas de jantar, todas no mesmo andar, e na verdade no mesmo corredor.</p>
+                        `
+                    }
+                ]
+            }
+        };
+
+        let currentBook = null;
+        let currentChapter = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookId = urlParams.get('id');
+            
+            if (bookId && booksData[bookId]) {
+                currentBook = booksData[bookId];
+                loadBook();
+            } else {
+                document.getElementById('chapterContent').innerHTML = '<p>Livro não encontrado.</p>';
+            }
+
+            setupMobileMenu();
+        });
+
+        function loadBook() {
+            document.getElementById('bookTitle').textContent = currentBook.title;
+            document.getElementById('bookAuthor').textContent = currentBook.author;
+            
+            populateChapterSelector();
+            loadChapter(0);
+        }
+
+        function populateChapterSelector() {
+            const select = document.getElementById('chapterSelect');
+            select.innerHTML = '';
+            
+            currentBook.chapters.forEach((chapter, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Capítulo ${index + 1}: ${chapter.title}`;
+                select.appendChild(option);
+            });
+        }
+
+        function loadChapter(chapterIndex) {
+            if (chapterIndex < 0 || chapterIndex >= currentBook.chapters.length) {
+                return;
+            }
+
+            currentChapter = chapterIndex;
+            const chapter = currentBook.chapters[chapterIndex];
+            
+            document.getElementById('chapterContent').innerHTML = chapter.content;
+            document.getElementById('chapterInfo').textContent = 
+                `Capítulo ${chapterIndex + 1} de ${currentBook.chapters.length}`;
+            document.getElementById('chapterSelect').value = chapterIndex;
+            
+            updateProgress();
+            updateNavigationButtons();
+        }
+
+        function updateProgress() {
+            const progress = ((currentChapter + 1) / currentBook.chapters.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('progressText').textContent = 
+                `${Math.round(progress)}% concluído`;
+        }
+
+        function updateNavigationButtons() {
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            
+            prevButton.disabled = currentChapter === 0;
+            nextButton.disabled = currentChapter === currentBook.chapters.length - 1;
+        }
+
+        function previousChapter() {
+            if (currentChapter > 0) {
+                loadChapter(currentChapter - 1);
+            }
+        }
+
+        function nextChapter() {
+            if (currentChapter < currentBook.chapters.length - 1) {
+                loadChapter(currentChapter + 1);
+            }
+        }
+
+        function goToChapter(chapterIndex) {
+            loadChapter(parseInt(chapterIndex));
+        }
+
+        function setupMobileMenu() {
+            const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+            const mobileMenu = document.querySelector('.mobile-menu');
+            let mobileMenuOpen = false;
+
+            mobileMenuToggle.addEventListener('click', () => {
+                mobileMenuOpen = !mobileMenuOpen;
+                mobileMenu.classList.toggle('active', mobileMenuOpen);
+                const icon = mobileMenuToggle.querySelector('i');
+                icon.className = mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars';
+            });
+        }
+    </script>
+</body>
+</html>
+

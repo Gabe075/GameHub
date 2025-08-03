@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameHub - Biblioteca de Livros</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        .book-card {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .book-cover {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .book-info {
+            padding: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .book-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .book-author {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .book-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            max-height: 90px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .book-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+        }
+
+        .book-meta span i {
+            margin-right: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .read-button {
+            display: block;
+            width: calc(100% - 3rem);
+            margin: 1.5rem;
+            padding: 0.8rem;
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            border-radius: var(--border-radius-md);
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .read-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .filters {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            padding: 0.7rem 1.2rem;
+            border-radius: var(--border-radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .search-bar input {
+            width: 100%;
+            max-width: 400px;
+            padding: 0.8rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .book-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-gamepad"></i>
+                <span>GameHub</span>
+            </div>
+            <nav class="nav">
+                <a href="../index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Início
+                </a>
+                <a href="../index.html#games" class="nav-link">
+                    <i class="fas fa-dice-d6"></i> Jogos
+                </a>
+                <a href="#" class="nav-link active">
+                    <i class="fas fa-book"></i> Livros
+                </a>
+                <a href="../sobre.html" class="nav-link">
+                    <i class="fas fa-info-circle"></i> Sobre
+                </a>
+                <a href="../contato.html" class="nav-link">
+                    <i class="fas fa-envelope"></i> Contato
+                </a>
+            </nav>
+            <div class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="../index.html" class="mobile-nav-link">
+            <i class="fas fa-home"></i> Início
+        </a>
+        <a href="../index.html#games" class="mobile-nav-link">
+            <i class="fas fa-dice-d6"></i> Jogos
+        </a>
+        <a href="#" class="mobile-nav-link active">
+            <i class="fas fa-book"></i> Livros
+        </a>
+        <a href="../sobre.html" class="mobile-nav-link">
+            <i class="fas fa-info-circle"></i> Sobre
+        </a>
+        <a href="../contato.html" class="mobile-nav-link">
+            <i class="fas fa-envelope"></i> Contato
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main">
+        <section id="books" class="section active">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Biblioteca de Livros</h2>
+                    <p class="section-subtitle">Explore histórias épicas e crie suas próprias aventuras!</p>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="bookSearch" placeholder="Buscar livros...">
+                </div>
+
+                <div class="filters">
+                    <button class="filter-btn active" data-category="all">
+                        <i class="fas fa-th"></i> Todos
+                    </button>
+                    <button class="filter-btn" data-category="fantasia">
+                        <i class="fas fa-dragon"></i> Fantasia
+                    </button>
+                    <button class="filter-btn" data-category="ficcao-cientifica">
+                        <i class="fas fa-space-shuttle"></i> Ficção Científica
+                    </button>
+                    <button class="filter-btn" data-category="misterio">
+                        <i class="fas fa-mask"></i> Mistério
+                    </button>
+                    <button class="filter-btn" data-category="aventura">
+                        <i class="fas fa-map-marked-alt"></i> Aventura
+                    </button>
+                </div>
+
+                <div class="book-grid" id="bookGrid">
+                    <!-- Livros serão carregados dinamicamente aqui -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-gamepad"></i> GameHub</h3>
+                    <p>Sua plataforma completa de entretenimento digital</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links Rápidos</h4>
+                    <ul>
+                        <li><a href="../index.html">Início</a></li>
+                        <li><a href="../index.html#games">Jogos</a></li>
+                        <li><a href="#">Livros</a></li>
+                        <li><a href="../sobre.html">Sobre</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Estatísticas</h4>
+                    <ul>
+                        <li><span id="footerGames">0</span> Jogos</li>
+                        <li><span id="footerBooks">0</span> Livros</li>
+                        <li><span id="footerUsers">1</span> Usuário</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 GameHub. Desenvolvido com ❤️ para diversão e aprendizado.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Dados de exemplo para livros (serão substituídos por arquivos reais)
+        const booksData = [
+            {
+                id: "aventura-jovem-explorador",
+                title: "A Aventura do Jovem Explorador",
+                author: "Autor Exemplo",
+                description: "Lucas encontra um mapa antigo que o leva a uma jornada épica através da Floresta Encantada, onde descobrirá que o verdadeiro tesouro não é ouro, mas sabedoria e amizade.",
+                category: "fantasia",
+                cover: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop",
+                chapters: 5,
+                file: "exemplo-livro.html"
+            },
+            {
+                id: "harry-potter-pedra-filosofal",
+                title: "Harry Potter e a Pedra Filosofal",
+                author: "J.K. Rowling",
+                description: "A história de Harry Potter, um órfão que descobre ser um bruxo no seu décimo primeiro aniversário e é convidado a estudar em Hogwarts.",
+                category: "fantasia",
+                cover: "https://m.media-amazon.com/images/I/81EBp0vOZZL._AC_UF1000,1000_QL80_.jpg",
+                chapters: 17,
+                file: null
+            },
+            {
+                id: "o-hobbit",
+                title: "O Hobbit",
+                author: "J.R.R. Tolkien",
+                description: "Bilbo Bolseiro, um hobbit pacato, é arrastado para uma aventura inesperada com um grupo de anões e um mago.",
+                category: "fantasia",
+                cover: "https://m.media-amazon.com/images/I/81x0s-z-KLL._AC_UF1000,1000_QL80_.jpg",
+                chapters: 19,
+                file: null
+            },
+            {
+                id: "duna",
+                title: "Duna",
+                author: "Frank Herbert",
+                description: "Em um futuro distante, o planeta desértico Arrakis é a única fonte da especiaria 'melange', a substância mais valiosa do universo.",
+                category: "ficcao-cientifica",
+                cover: "https://m.media-amazon.com/images/I/81x0s-z-KLL._AC_UF1000,1000_QL80_.jpg",
+                chapters: 48,
+                file: null
+            }
+        ];
+
+        let currentFilter = 'all';
+        let currentSearchTerm = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateBookGrid();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.querySelectorAll('.filter-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    currentFilter = button.dataset.category;
+                    updateActiveFilter(button);
+                    populateBookGrid();
+                });
+            });
+
+            document.getElementById('bookSearch').addEventListener('input', (event) => {
+                currentSearchTerm = event.target.value.toLowerCase();
+                populateBookGrid();
+            });
+        }
+
+        function populateBookGrid() {
+            const bookGrid = document.getElementById('bookGrid');
+            bookGrid.innerHTML = '';
+
+            const filteredBooks = booksData.filter(book => {
+                const matchesCategory = currentFilter === 'all' || book.category === currentFilter;
+                const matchesSearch = book.title.toLowerCase().includes(currentSearchTerm) ||
+                                      book.author.toLowerCase().includes(currentSearchTerm) ||
+                                      book.description.toLowerCase().includes(currentSearchTerm);
+                return matchesCategory && matchesSearch;
+            });
+
+            if (filteredBooks.length === 0) {
+                bookGrid.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Nenhum livro encontrado com os filtros aplicados.</p>';
+                return;
+            }
+
+            filteredBooks.forEach(book => {
+                const bookCard = createBookCard(book);
+                bookGrid.appendChild(bookCard);
+            });
+        }
+
+        function createBookCard(book) {
+            const card = document.createElement('div');
+            card.className = 'book-card';
+            
+            const readLink = book.file ? book.file : `book.html?id=${book.id}`;
+            const readText = book.file ? 'Ler Livro' : 'Em Breve';
+            const cardClass = book.file ? '' : ' style="opacity: 0.7;"';
+            
+            card.innerHTML = `
+                <img src="${book.cover}" alt="Capa do Livro" class="book-cover">
+                <div class="book-info">
+                    <h3 class="book-title">${book.title}</h3>
+                    <p class="book-author">${book.author}</p>
+                    <p class="book-description">${book.description}</p>
+                    <div class="book-meta">
+                        <span><i class="fas fa-book-open"></i> ${book.chapters} Capítulos</span>
+                        <span><i class="fas fa-tag"></i> ${book.category.charAt(0).toUpperCase() + book.category.slice(1).replace('-', ' ')}</span>
+                    </div>
+                </div>
+                <a href="${readLink}" class="read-button"${cardClass}>${readText}</a>
+            `;
+            
+            if (!book.file) {
+                card.style.cursor = 'default';
+                card.querySelector('.read-button').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    alert('Este livro ainda não está disponível. Adicione o arquivo seguindo as instruções!');
+                });
+            }
+            
+            return card;
+        }
+
+        function updateActiveFilter(activeButton) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            activeButton.classList.add('active');
+        }
+
+        // Funções para o menu mobile (copiadas do script.js principal)
+        const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        let mobileMenuOpen = false;
+
+        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+
+        function toggleMobileMenu() {
+            mobileMenuOpen = !mobileMenuOpen;
+            mobileMenu.classList.toggle('active', mobileMenuOpen);
+            const icon = mobileMenuToggle.querySelector('i');
+            icon.className = mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars';
+        }
+
+        function closeMobileMenu() {
+            mobileMenuOpen = false;
+            mobileMenu.classList.remove('active');
+            const icon = mobileMenuToggle.querySelector('i');
+            icon.className = 'fas fa-bars';
+        }
+    </script>
+</body>
+</html>
+
